@@ -267,8 +267,8 @@ class Ui_MainWindow(object):
 		self.QmaxLabel.setText(_translate("MainWindow", "Qmax"))
 		self.qmaxinstLabel.setText(_translate("MainWindow", "Qmax inst"))
 		
-		self.filename.setText(_translate('MainWindow',"gudrun/LaB6_0p4mm_011_av10_monitor.xye"))
-		self.bkgfilename.setText(_translate('MainWindow',"gudrun/0p4mm_capillary_018_av17_monitor.xye"))
+		self.filename.setText(_translate('MainWindow',"exampleFiles/LaB6_0p4mm_011_av10_monitor.xye"))
+		self.bkgfilename.setText(_translate('MainWindow',"exampleFiles/0p4mm_capillary_018_av17_monitor.xye"))
 		self.fileListLabel.setText(_translate("MainWindow", "File list"))		
 		self.compositionBox.setText(_translate("MainWindow", "LaB6"))
 		self.wavelengthBox.setText(_translate("MainWindow", "0.270793"))
