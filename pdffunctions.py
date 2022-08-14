@@ -31,6 +31,29 @@ def run_pdfgetx3(file,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,data
 	iqorig = pdfcalc.results[2][1]
 	bkg = iqorig-iq
 	return qi,iqorig,bkg,q, sq, fq, rgr
+	
+def writeOutput(file,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,dataformat,rmin, rmax, rstep,wavelength = 0.2,
+iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
+	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, composition = composition, 
+	backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
+	if dataformat == 'twotheta':
+		config.wavelength = wavelength
+	pdfcalc = PDFGetter(config = config)
+	pdfcalc(filename = file)
+	outfile = os.path.splitext(file)[0]
+	plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
+	outputtypestring = ''
+	for n in range(len(plotlist)):
+		if n:
+			elif n == 1:
+				pdfcalc.writeOutput(filename = outfile+'.sq', outputtype = 'sq')
+			elif n == 2:
+				pdfcalc.writeOutput(filename = outfile+'.fq', outputtype = 'fq')
+			elif n == 3:
+				pdfcalc.writeOutput(filename = outfile+'.gr', outputtype = 'gr')
+			
+	
+	
 
 def plotOutput(fig,ax,qi,iq,bkg,q,sq,fq,rgr,iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
 

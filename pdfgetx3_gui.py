@@ -234,11 +234,16 @@ class Ui_MainWindow(object):
 		self.dataformat = None
 		self.plotlist = []
 
+		self.iqcheck = None
+		self.sqcheck = None
+		self.fqcheck = None
+		self.grcheck = None
 		
 		self.actionOpen.triggered.connect(self.open_file)
 		self.fileButton.clicked.connect(self.open_file)
 		self.bkgfilebutton.clicked.connect(self.open_bkgfile)
 		self.removeButton.clicked.connect(self.removeFile)
+		self.saveButton.clicked.connect(self.saveFile)
 
 		self.plotButton.clicked.connect(self.run)
 		self.fileList = []
@@ -331,17 +336,27 @@ class Ui_MainWindow(object):
 		basefilename = os.path.basename(dialog[0])
 		self.bkgfilename.setText(dialog[0])
 
-
-
+	def saveFile(self):
+		
+		pdffunctions.writeOutput(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=float(self.bkgscalebox.text()),
+		composition = self.compositionBox.text(),qmin=float(self.qminbox.text()),qmax=float(self.qmaxbox.text()),qmaxinst=float(self.qmaxinstbox.text()),
+		rpoly=float(self.rpolybox.text()),dataformat = self.dataformat, rmin = float(self.rminBox.text()), rmax = float(self.rmaxBox.text()),
+		rstep = float(self.rstepBox.text()),wavelength = float(self.wavelengthBox.text()),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
+		fqcheck = self.fqcheck, grcheck = self.grcheck)
+		
+		
+		if len(self.plotlist[self.plotlist == True])==0:
+			print('no outputs selected to plot')
+			return
 	def run(self):
 		
 
-		iqcheck = self.iqCheckBox.isChecked()
-		sqcheck = self.sqCheckBox.isChecked()
-		fqcheck = self.fqCheckBox.isChecked()
-		grcheck = self.grCheckBox.isChecked()
+		self.iqcheck = self.iqCheckBox.isChecked()
+		self.sqcheck = self.sqCheckBox.isChecked()
+		self.fqcheck = self.fqCheckBox.isChecked()
+		self.grcheck = self.grCheckBox.isChecked()
 		
-		self.plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
+		self.plotlist = np.array([self.iqcheck,self.sqcheck,self.fqcheck,self.grcheck])
 		
 		if len(self.plotlist[self.plotlist == True])==0:
 			print('no outputs selected to plot')
@@ -355,7 +370,7 @@ class Ui_MainWindow(object):
 		elif self.twothetaButton.isChecked():
 			self.dataformat = 'twotheta'
 		self.inputfile = self.filename.text()
-		print('calculating')
+
 
 		self.plotUpdate()
 		
@@ -368,7 +383,7 @@ class Ui_MainWindow(object):
 		qi,iq,bkg,q,sq,fq,rgr = pdffunctions.run_pdfgetx3(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=float(self.bkgscalebox.text()),
 		composition = self.compositionBox.text(),qmin=float(self.qminbox.text()),qmax=float(self.qmaxbox.text()),qmaxinst=float(self.qmaxinstbox.text()),
 		rpoly=float(self.rpolybox.text()),dataformat = self.dataformat, rmin = float(self.rminBox.text()), rmax = float(self.rmaxBox.text()), 
-		rstep = float(self.rstepBox.text()))
+		rstep = float(self.rstepBox.text()),wavelength = float(self.wavelengthBox.text()))
 		r,g = rgr[0],rgr[1]
 
 		for n in range(self.noplots):
