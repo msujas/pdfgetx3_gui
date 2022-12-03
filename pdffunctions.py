@@ -15,14 +15,16 @@ from diffpy.pdfgetx.functs import loaddata, findfiles
 # TODO - replace with  `loadData = loaddata` for version 3.0
 from diffpy.pdfgetx.functs import loadData
 
-def run_pdfgetx3(file,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,dataformat,rmin, rmax, rstep,wavelength = 0.2):
+def run_pdfgetx3(file: str,bkgfile: str,bkgscale: float,composition: str, qmin: float,qmax: float,qmaxinst: float,rpoly: float,
+dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2):
 	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, composition = composition, 
 	backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
 	if dataformat == 'twotheta':
 		config.wavelength = wavelength
 	pdfcalc = PDFGetter(config = config)
 	pdfcalc(filename = file)
-	rgr = pdfcalc.gr
+	r = pdfcalc.gr[0]
+	gr = pdfcalc.gr[1]
 	fq = pdfcalc.fq[1]
 	sq = pdfcalc.sq[1]
 	q = pdfcalc.sq[0]
@@ -30,7 +32,7 @@ def run_pdfgetx3(file,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,data
 	qi = pdfcalc.iq[0]
 	iqorig = pdfcalc.results[2][1]
 	bkg = iqorig-iq
-	return qi,iqorig,bkg,q, sq, fq, rgr
+	return qi,iqorig,bkg,q, sq, fq, r, gr
 	
 def writeOutput(file,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,dataformat,rmin, rmax, rstep,wavelength = 0.2,
 iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
@@ -45,7 +47,7 @@ iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
 	outputtypestring = ''
 	for n in range(len(plotlist)):
 		if n:
-			elif n == 1:
+			if n == 1:
 				pdfcalc.writeOutput(filename = outfile+'.sq', outputtype = 'sq')
 			elif n == 2:
 				pdfcalc.writeOutput(filename = outfile+'.fq', outputtype = 'fq')
