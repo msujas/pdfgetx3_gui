@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 import time
-matplotlib.rcParams.update({'font.size': 12})
+matplotlib.rcParams.update({'font.size': 10})
 
 
 class Worker(QtCore.QThread):
@@ -289,6 +289,11 @@ class Ui_MainWindow(object):
 
 		self.running = False
 		self.fileList = []
+		if self.filename != '':
+			self.fileList.append(self.filename.text())
+			self.filelistBox.addItem('')
+			self.filelistBox.setItemText(self.filelistBox.count()-1,os.path.basename(self.filename.text()))
+			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
 		self.filelistBox.currentTextChanged.connect(self.changeFile)
 		#self.plotButton.clicked.connect(self.run)
 		self.plotButton.clicked.connect(self.startWorker)
@@ -354,12 +359,12 @@ class Ui_MainWindow(object):
 
 		basefilename = os.path.basename(dialog[0])
 		
-		
-		self.filename.setText(dialog[0])
-		self.fileList.append(dialog[0])
-		self.filelistBox.addItem('')
-		self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
-		self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+		if dialog[0] != '':
+			self.filename.setText(dialog[0])
+			self.fileList.append(dialog[0])
+			self.filelistBox.addItem('')
+			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
+			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
 	def changeFile(self):
 		fileindex = self.filelistBox.currentIndex()
 		newfile = self.fileList[fileindex]
@@ -398,94 +403,10 @@ class Ui_MainWindow(object):
 	def setQmax_max(self):
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 
-	def run(self):
-		
-
-		self.iqcheck = self.iqCheckBox.isChecked()
-		self.sqcheck = self.sqCheckBox.isChecked()
-		self.fqcheck = self.fqCheckBox.isChecked()
-		self.grcheck = self.grCheckBox.isChecked()
-		
-		self.plotlist = np.array([self.iqcheck,self.sqcheck,self.fqcheck,self.grcheck])
-		
-		if len(self.plotlist[self.plotlist == True])==0:
-			print('no outputs selected to plot')
-			return
-		
-		self.noplots = len(self.plotlist[self.plotlist==True])
-		self.fig,self.ax = plt.subplots(self.noplots,1,dpi = 150)
-
-		if self.QButton.isChecked():
-			self.dataformat = 'QA'
-		elif self.twothetaButton.isChecked():
-			self.dataformat = 'twotheta'
-		self.inputfile = self.filename.text()
-
-
-		self.plotUpdate()
-		
-
-	def plotUpdate(self):
-		self.running = True
-		self.bkgscalebox.setEnabled(False)
-		self.rminBox.setEnabled(False)
-		self.rmaxBox.setEnabled(False)
-		self.rstepBox.setEnabled(False)
-		self.compositionBox.setEnabled(False)
-		self.qminbox.setEnabled(False)
-		self.qmaxbox.setEnabled(False)
-		self.qmaxinstbox.setEnabled(False)
-		self.rpolybox.setEnabled(False)
-
-		qi,iq,bkg,q,sq,fq,r,gr = pdffunctions.run_pdfgetx3(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
-		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
-		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(), 
-		rstep = self.rstepBox.value(),wavelength = float(self.wavelengthBox.text()))
-
-
-		for n in range(self.noplots):
-			self.ax[n].cla()
-
-		plotno = 0
-
-		for c,plot in enumerate(self.plotlist):
-			if plot:
-				if c == 0:
-
-					self.ax[plotno].plot(qi,iq,label = 'total scattering')
-					self.ax[plotno].plot(qi,bkg,label = 'background')
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-					self.ax[plotno].set_ylabel('Intensity')
-					self.ax[plotno].legend()
-				elif c == 1:
-					self.ax[plotno].plot(q,sq)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-					self.ax[plotno].set_ylabel('S(Q)')
-				elif c == 2:
-					self.ax[plotno].plot(q,fq)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-					self.ax[plotno].set_ylabel('F(Q)')
-				elif c == 3:
-					self.ax[plotno].plot(r,gr)
-					self.ax[plotno].set_xlabel('r (Å)')
-					self.ax[plotno].set_ylabel('G(r)')				
-				plotno += 1
-		
-		plt.show(block = False)
-		plt.pause(0.01)
-		self.bkgscalebox.setEnabled(True)
-		self.rminBox.setEnabled(True)
-		self.rmaxBox.setEnabled(True)
-		self.rstepBox.setEnabled(True)
-		self.compositionBox.setEnabled(True)
-		self.qminbox.setEnabled(True)
-		self.qmaxbox.setEnabled(True)
-		self.qmaxinstbox.setEnabled(True)
-		self.rpolybox.setEnabled(True)
-
-
-
 	def startWorker(self):
+		if self.running:
+			plt.close()
+			self.thread.stop()
 		self.running = True
 		inputfile=self.filename.text()
 		bkgfile=self.bkgfilename.text()
@@ -516,6 +437,7 @@ class Ui_MainWindow(object):
 		
 		if len(self.plotlist[self.plotlist == True])==0:
 			print('no outputs selected to plot')
+			self.running = False
 			return
 		
 
@@ -530,10 +452,10 @@ class Ui_MainWindow(object):
 		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength)
 		
 		self.thread.start()
-		self.thread.outputs.connect(self.plotUpdate2)
+		self.thread.outputs.connect(self.plotUpdate)
 
 
-	def plotUpdate2(self,outputs: list):
+	def plotUpdate(self,outputs: list):
 		qi,iq,bkg,q,sq,fq,r, gr = outputs
 
 
@@ -551,20 +473,26 @@ class Ui_MainWindow(object):
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('Intensity')
 					self.ax[plotno].legend()
+					self.ax[plotno].set_xlim(qi[0],qi[-1])
+
 				elif c == 1:
 					self.ax[plotno].plot(q,sq)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('S(Q)')
+					self.ax[plotno].set_xlim(q[0],q[-1])
 				elif c == 2:
 					self.ax[plotno].plot(q,fq)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('F(Q)')
+					self.ax[plotno].set_xlim(q[0],q[-1])
 				elif c == 3:
 					self.ax[plotno].plot(r,gr)
 					self.ax[plotno].set_xlabel('r (Å)')
-					self.ax[plotno].set_ylabel('G(r)')				
+					self.ax[plotno].set_ylabel('G(r)')
+					self.ax[plotno].set_xlim(r[0],r[-1])				
 				plotno += 1
-		
+		plt.subplots_adjust(top = 0.99, bottom = 0.05, right = 0.99, left = 0.05, 
+            hspace = 0.2, wspace = 0)
 		plt.show(block = False)
 		plt.pause(0.01)
 
