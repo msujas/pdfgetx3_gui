@@ -6,6 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os
 import pdffunctions
@@ -13,6 +14,37 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 matplotlib.rcParams.update({'font.size': 12})
+
+
+class Worker(QtCore.QThread):
+	outputs = QtCore.pyqtSignal()
+
+	def __init__(self,file,bkgfile,bkgscale,composition, dataformat,qmin,qmax,qmaxinst, rmin, rmax, rstep, rpoly,
+	wavelength):
+		super(Worker,self).__init__()
+		self.file = file
+		self.bkgfile = bkgfile
+		self.bkgscale = bkgscale
+		self.composition = composition
+		self.dataformat = dataformat
+		self.rpoly = rpoly
+		self.qmin = qmin
+		self.qmax = qmax
+		self.qmaxinst = qmaxinst
+		self.rmin = rmin
+		self.rmax = rmax
+		self.rstep = rstep
+		self.wavelength = wavelength
+
+
+	def run(self):
+		qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
+		composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
+		rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
+		rstep = self.rstep,wavelength = self.wavelength)
+
+		self.outputs = [qi,iq,bkg,q,sq,fq,r, gr]
+		self.outputs.emit()
 
 
 
@@ -245,11 +277,13 @@ class Ui_MainWindow(object):
 		self.removeButton.clicked.connect(self.removeFile)
 		self.saveButton.clicked.connect(self.saveFile)
 
-		self.plotButton.clicked.connect(self.run)
+		
 		self.fileList = []
 		self.filelistBox.currentTextChanged.connect(self.changeFile)
-		
+		self.plotButton.clicked.connect(self.run)
+		#self.plotButton.clicked.connect(self.startWorker)
 		#self.updatePlotButton.clicked.connect(self.plotUpdate)
+		self.bkgscalebox.valueChanged.connect(self.plotUpdate)
 		self.rminBox.valueChanged.connect(self.plotUpdate)
 		self.rmaxBox.valueChanged.connect(self.plotUpdate)
 		self.rstepBox.valueChanged.connect(self.plotUpdate)
@@ -338,10 +372,10 @@ class Ui_MainWindow(object):
 
 	def saveFile(self):
 		
-		pdffunctions.writeOutput(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=float(self.bkgscalebox.text()),
-		composition = self.compositionBox.text(),qmin=float(self.qminbox.text()),qmax=float(self.qmaxbox.text()),qmaxinst=float(self.qmaxinstbox.text()),
-		rpoly=float(self.rpolybox.text()),dataformat = self.dataformat, rmin = float(self.rminBox.text()), rmax = float(self.rmaxBox.text()),
-		rstep = float(self.rstepBox.text()),wavelength = float(self.wavelengthBox.text()),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
+		pdffunctions.writeOutput(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
+		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
+		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(),
+		rstep = self.rstepBox.value(),wavelength = self.wavelengthBox.value(),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
 		fqcheck = self.fqcheck, grcheck = self.grcheck)
 		
 		
@@ -375,17 +409,121 @@ class Ui_MainWindow(object):
 		self.plotUpdate()
 		
 
-
-
-
 	def plotUpdate(self):
+		self.bkgscalebox.setEnabled(False)
+		self.rminBox.setEnabled(False)
+		self.rmaxBox.setEnabled(False)
+		self.rstepBox.setEnabled(False)
+		self.compositionBox.setEnabled(False)
+		self.qminbox.setEnabled(False)
+		self.qmaxbox.setEnabled(False)
+		self.qmaxinstbox.setEnabled(False)
+		self.rpolybox.setEnabled(False)
 
-		qi,iq,bkg,q,sq,fq,rgr = pdffunctions.run_pdfgetx3(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=float(self.bkgscalebox.text()),
-		composition = self.compositionBox.text(),qmin=float(self.qminbox.text()),qmax=float(self.qmaxbox.text()),qmaxinst=float(self.qmaxinstbox.text()),
-		rpoly=float(self.rpolybox.text()),dataformat = self.dataformat, rmin = float(self.rminBox.text()), rmax = float(self.rmaxBox.text()), 
-		rstep = float(self.rstepBox.text()),wavelength = float(self.wavelengthBox.text()))
-		r,g = rgr[0],rgr[1]
+		qi,iq,bkg,q,sq,fq,r,gr = pdffunctions.run_pdfgetx3(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
+		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
+		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(), 
+		rstep = self.rstepBox.value(),wavelength = float(self.wavelengthBox.text()))
 
+
+		for n in range(self.noplots):
+			self.ax[n].cla()
+
+		plotno = 0
+
+		for c,plot in enumerate(self.plotlist):
+			if plot:
+				if c == 0:
+
+					self.ax[plotno].plot(qi,iq,label = 'total scattering')
+					self.ax[plotno].plot(qi,bkg,label = 'background')
+					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_ylabel('Intensity')
+					self.ax[plotno].legend()
+				elif c == 1:
+					self.ax[plotno].plot(q,sq)
+					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_ylabel('S(Q)')
+				elif c == 2:
+					self.ax[plotno].plot(q,fq)
+					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_ylabel('F(Q)')
+				elif c == 3:
+					self.ax[plotno].plot(r,gr)
+					self.ax[plotno].set_xlabel('r (Å)')
+					self.ax[plotno].set_ylabel('G(r)')				
+				plotno += 1
+		
+		plt.show(block = False)
+		plt.pause(0.01)
+		self.bkgscalebox.setEnabled(True)
+		self.rminBox.setEnabled(True)
+		self.rmaxBox.setEnabled(True)
+		self.rstepBox.setEnabled(True)
+		self.compositionBox.setEnabled(True)
+		self.qminbox.setEnabled(True)
+		self.qmaxbox.setEnabled(True)
+		self.qmaxinstbox.setEnabled(True)
+		self.rpolybox.setEnabled(True)
+
+	def startWorker(self):
+		file=self.filename.text()
+		bkgfile=self.bkgfilename.text()
+		bkgscale=self.bkgscalebox.value()
+		composition = self.compositionBox.text()
+		qmin=self.qminbox.value()
+		qmax=self.qmaxbox.value()
+		qmaxinst=self.qmaxinstbox.value()
+		rpoly=self.rpolybox.value()
+		rmin = self.rminBox.value()
+		rmax = self.rmaxBox.value(), 
+		rstep = self.rstepBox.value()
+		wavelength = float(self.wavelengthBox.text())
+
+
+		
+		if self.QButton.isChecked():
+			dataformat = 'QA'
+		elif self.twothetaButton.isChecked():
+			dataformat = 'twotheta'
+
+		iqcheck = self.iqCheckBox.isChecked()
+		sqcheck = self.sqCheckBox.isChecked()
+		fqcheck = self.fqCheckBox.isChecked()
+		grcheck = self.grCheckBox.isChecked()
+		plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
+		noplots = len(plotlist[plotlist==True])
+
+
+		
+		if len(plotlist[plotlist == True])==0:
+			print('no outputs selected to plot')
+			return
+		
+
+		self.fig,self.ax = plt.subplots(noplots,1,dpi = 150)
+
+		if self.QButton.isChecked():
+			self.dataformat = 'QA'
+		elif self.twothetaButton.isChecked():
+			self.dataformat = 'twotheta'
+
+		self.thread = Worker(file = file, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
+		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, 
+		wavelength = wavelength)
+		self.thread.start()
+		self.thread.outputs.connect(self.plotUpdate2)
+
+
+	def plotUpdate2(self,outputs: list):
+		qi,iq,bkg,q,sq,fq,r, gr = outputs
+
+		iqcheck = self.iqCheckBox.isChecked()
+		sqcheck = self.sqCheckBox.isChecked()
+		fqcheck = self.fqCheckBox.isChecked()
+		grcheck = self.grCheckBox.isChecked()
+		plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
+		noplots = len(plotlist[plotlist==True])
 		for n in range(self.noplots):
 			self.ax[n].cla()
 
@@ -416,8 +554,6 @@ class Ui_MainWindow(object):
 		
 		plt.show(block = False)
 		plt.pause(0.01)
-
-
 		
 		
 if __name__ == "__main__":
