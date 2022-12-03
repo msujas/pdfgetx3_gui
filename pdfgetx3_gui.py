@@ -13,14 +13,15 @@ import pdffunctions
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
+import time
 matplotlib.rcParams.update({'font.size': 12})
 
 
 class Worker(QtCore.QThread):
-	outputs = QtCore.pyqtSignal()
+	outputs = QtCore.pyqtSignal(list)
 
-	def __init__(self,file,bkgfile,bkgscale,composition, dataformat,qmin,qmax,qmaxinst, rmin, rmax, rstep, rpoly,
-	wavelength):
+	def __init__(self,file: str,bkgfile: str,bkgscale: float,composition: str, dataformat: str,qmin: float,qmax: float,qmaxinst: float, 
+	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float):
 		super(Worker,self).__init__()
 		self.file = file
 		self.bkgfile = bkgfile
@@ -35,18 +36,25 @@ class Worker(QtCore.QThread):
 		self.rmax = rmax
 		self.rstep = rstep
 		self.wavelength = wavelength
+		self.running = True
 
 
 	def run(self):
-		qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
-		composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
-		rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
-		rstep = self.rstep,wavelength = self.wavelength)
+		while self.running:
+			qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
+			composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
+			rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
+			rstep = self.rstep,wavelength = self.wavelength)
+			self.repeat = False
+			self.outputs.emit([qi,iq,bkg,q,sq,fq,r, gr])
 
-		self.outputs = [qi,iq,bkg,q,sq,fq,r, gr]
-		self.outputs.emit()
 
+			while self.repeat == False:
 
+				time.sleep(0.01)
+		return
+	def stop(self):
+		self.running = False
 
 class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
@@ -111,6 +119,7 @@ class Ui_MainWindow(object):
 		self.qmaxbox.setObjectName("qmaxbox")
 		self.qmaxbox.setDecimals(1)
 		self.qmaxbox.setSingleStep(0.1)
+
 		
 		self.rpolybox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.rpolybox.setGeometry(QtCore.QRect(371, 340, 61, 21))
@@ -271,27 +280,30 @@ class Ui_MainWindow(object):
 		self.fqcheck = None
 		self.grcheck = None
 		
+		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 		self.actionOpen.triggered.connect(self.open_file)
 		self.fileButton.clicked.connect(self.open_file)
 		self.bkgfilebutton.clicked.connect(self.open_bkgfile)
 		self.removeButton.clicked.connect(self.removeFile)
 		self.saveButton.clicked.connect(self.saveFile)
 
-		
+		self.running = False
 		self.fileList = []
 		self.filelistBox.currentTextChanged.connect(self.changeFile)
-		self.plotButton.clicked.connect(self.run)
-		#self.plotButton.clicked.connect(self.startWorker)
+		#self.plotButton.clicked.connect(self.run)
+		self.plotButton.clicked.connect(self.startWorker)
 		#self.updatePlotButton.clicked.connect(self.plotUpdate)
-		self.bkgscalebox.valueChanged.connect(self.plotUpdate)
-		self.rminBox.valueChanged.connect(self.plotUpdate)
-		self.rmaxBox.valueChanged.connect(self.plotUpdate)
-		self.rstepBox.valueChanged.connect(self.plotUpdate)
-		self.compositionBox.textChanged.connect(self.plotUpdate)
-		self.qminbox.valueChanged.connect(self.plotUpdate)
-		self.qmaxbox.valueChanged.connect(self.plotUpdate)
-		self.qmaxinstbox.valueChanged.connect(self.plotUpdate)
-		self.rpolybox.valueChanged.connect(self.plotUpdate)
+
+		self.bkgscalebox.valueChanged.connect(self.updateBkgscale)
+		self.rminBox.valueChanged.connect(self.updateRmin)
+		self.rmaxBox.valueChanged.connect(self.updateRmax)
+		self.rstepBox.valueChanged.connect(self.updateRstep)
+		self.compositionBox.textChanged.connect(self.updateComposition)
+		self.qminbox.valueChanged.connect(self.updateQmin)
+		self.qmaxbox.valueChanged.connect(self.updateQmax)
+		self.qmaxinstbox.valueChanged.connect(self.updateQmaxinst)
+		self.rpolybox.valueChanged.connect(self.updateRpoly)
+		self.qmaxinstbox.valueChanged.connect(self.setQmax_max)
 		
 	def retranslateUi(self, MainWindow):
 		_translate = QtCore.QCoreApplication.translate
@@ -382,6 +394,10 @@ class Ui_MainWindow(object):
 		if len(self.plotlist[self.plotlist == True])==0:
 			print('no outputs selected to plot')
 			return
+	
+	def setQmax_max(self):
+		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
+
 	def run(self):
 		
 
@@ -410,6 +426,7 @@ class Ui_MainWindow(object):
 		
 
 	def plotUpdate(self):
+		self.running = True
 		self.bkgscalebox.setEnabled(False)
 		self.rminBox.setEnabled(False)
 		self.rmaxBox.setEnabled(False)
@@ -466,8 +483,11 @@ class Ui_MainWindow(object):
 		self.qmaxinstbox.setEnabled(True)
 		self.rpolybox.setEnabled(True)
 
+
+
 	def startWorker(self):
-		file=self.filename.text()
+		self.running = True
+		inputfile=self.filename.text()
 		bkgfile=self.bkgfilename.text()
 		bkgscale=self.bkgscalebox.value()
 		composition = self.compositionBox.text()
@@ -476,41 +496,39 @@ class Ui_MainWindow(object):
 		qmaxinst=self.qmaxinstbox.value()
 		rpoly=self.rpolybox.value()
 		rmin = self.rminBox.value()
-		rmax = self.rmaxBox.value(), 
+		rmax = self.rmaxBox.value()
 		rstep = self.rstepBox.value()
 		wavelength = float(self.wavelengthBox.text())
 
-
-		
 		if self.QButton.isChecked():
 			dataformat = 'QA'
 		elif self.twothetaButton.isChecked():
 			dataformat = 'twotheta'
 
-		iqcheck = self.iqCheckBox.isChecked()
-		sqcheck = self.sqCheckBox.isChecked()
-		fqcheck = self.fqCheckBox.isChecked()
-		grcheck = self.grCheckBox.isChecked()
-		plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
-		noplots = len(plotlist[plotlist==True])
+		self.iqcheck = self.iqCheckBox.isChecked()
+		self.sqcheck = self.sqCheckBox.isChecked()
+		self.fqcheck = self.fqCheckBox.isChecked()
+		self.grcheck = self.grCheckBox.isChecked()
+		self.plotlist = np.array([self.iqcheck,self.sqcheck,self.fqcheck,self.grcheck])
+		self.noplots = len(self.plotlist[self.plotlist==True])
 
 
 		
-		if len(plotlist[plotlist == True])==0:
+		if len(self.plotlist[self.plotlist == True])==0:
 			print('no outputs selected to plot')
 			return
 		
 
-		self.fig,self.ax = plt.subplots(noplots,1,dpi = 150)
+		self.fig,self.ax = plt.subplots(self.noplots,1,dpi = 150)
 
 		if self.QButton.isChecked():
 			self.dataformat = 'QA'
 		elif self.twothetaButton.isChecked():
 			self.dataformat = 'twotheta'
 
-		self.thread = Worker(file = file, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
-		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, 
-		wavelength = wavelength)
+		self.thread = Worker(file = inputfile, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
+		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength)
+		
 		self.thread.start()
 		self.thread.outputs.connect(self.plotUpdate2)
 
@@ -518,12 +536,7 @@ class Ui_MainWindow(object):
 	def plotUpdate2(self,outputs: list):
 		qi,iq,bkg,q,sq,fq,r, gr = outputs
 
-		iqcheck = self.iqCheckBox.isChecked()
-		sqcheck = self.sqCheckBox.isChecked()
-		fqcheck = self.fqCheckBox.isChecked()
-		grcheck = self.grCheckBox.isChecked()
-		plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
-		noplots = len(plotlist[plotlist==True])
+
 		for n in range(self.noplots):
 			self.ax[n].cla()
 
@@ -547,15 +560,52 @@ class Ui_MainWindow(object):
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('F(Q)')
 				elif c == 3:
-					self.ax[plotno].plot(r,g)
+					self.ax[plotno].plot(r,gr)
 					self.ax[plotno].set_xlabel('r (Å)')
 					self.ax[plotno].set_ylabel('G(r)')				
 				plotno += 1
 		
 		plt.show(block = False)
 		plt.pause(0.01)
-		
-		
+
+	def updateQmin(self):
+		if self.running:
+			self.thread.qmin = self.qminbox.value()
+			self.thread.repeat = True
+	def updateQmax(self):
+		if self.running:
+			self.thread.qmax = self.qmaxbox.value()
+			self.thread.repeat = True
+	def updateQmaxinst(self):
+		if self.running:
+			self.thread.qmaxinst = self.qmaxinstbox.value()
+			self.thread.repeat = True
+	def updateRmax(self):
+		if self.running:
+			self.thread.rmax = self.rmaxBox.value()
+			self.thread.repeat = True
+	def updateRmin(self):
+		if self.running:
+			self.thread.rmin = self.rminBox.value()
+			self.thread.repeat = True		
+	def updateRstep(self):
+		if self.running:
+			self.thread.rstep = self.rstepBox.value()
+			self.thread.repeat = True
+	def updateRpoly(self):
+		if self.running:
+			self.thread.rpoly = self.rpolybox.value()
+			self.thread.repeat = True
+	def updateBkgscale(self):
+		if self.running:
+			self.thread.bkgscale = self.bkgscalebox.value()
+			self.thread.repeat = True
+	def updateComposition(self):
+		if self.running:
+			self.thread.composition = self.compositionBox.text()
+			self.thread.repeat = True
+
+
 if __name__ == "__main__":
 	import sys
 	app = QtWidgets.QApplication(sys.argv)
