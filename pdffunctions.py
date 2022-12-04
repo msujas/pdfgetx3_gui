@@ -1,4 +1,4 @@
-import subprocess, os
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
@@ -6,13 +6,11 @@ import matplotlib
 matplotlib.rcParams.update({'font.size': 12})
 from diffpy.pdfgetx.version import __version__
 
-# some convenience imports
 from diffpy.pdfgetx.pdfconfig import PDFConfig, loadPDFConfig
 from diffpy.pdfgetx.pdfgetter import PDFGetter
 from diffpy.pdfgetx.transformation import Transformation
 from diffpy.pdfgetx.functs import loaddata, findfiles
 
-# TODO - replace with  `loadData = loaddata` for version 3.0
 from diffpy.pdfgetx.functs import loadData
 
 def run_pdfgetx3(file: str,bkgfile: str,bkgscale: float,composition: str, qmin: float,qmax: float,qmaxinst: float,rpoly: float,
@@ -34,8 +32,8 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2):
 	bkg = iqorig-iq
 	return qi,iqorig,bkg,q, sq, fq, r, gr
 	
-def writeOutput(file,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,dataformat,rmin, rmax, rstep,wavelength = 0.2,
-iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
+def writeOutput(file: str,bkgfile: str,bkgscale: float,composition: str,qmin: float,qmax: float,qmaxinst: float,rpoly: float,
+dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
 	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, composition = composition, 
 	backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
 	if dataformat == 'twotheta':

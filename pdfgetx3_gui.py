@@ -285,7 +285,6 @@ class Ui_MainWindow(object):
 		self.fig = None
 		self.ax = None
 		self.noplots = 0
-		self.inputfile = None
 		self.dataformat = None
 		self.plotlist = []
 
@@ -455,10 +454,10 @@ class Ui_MainWindow(object):
 
 	def saveFile(self):
 		
-		pdffunctions.writeOutput(file=self.inputfile,bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
+		pdffunctions.writeOutput(file=self.filename.text(),bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
 		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
 		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(),
-		rstep = self.rstepBox.value(),wavelength = self.wavelengthBox.value(),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
+		rstep = self.rstepBox.value(),wavelength = float(self.wavelengthBox.text()),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
 		fqcheck = self.fqcheck, grcheck = self.grcheck)
 		
 		
