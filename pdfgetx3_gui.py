@@ -69,7 +69,7 @@ class Worker(QtCore.QThread):
 
 class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
-		MainWindow.setObjectName("MainWindow")
+		MainWindow.setObjectName("PDFGetX3 GUI")
 		MainWindow.resize(702, 657)
 		self.centralwidget = QtWidgets.QWidget(MainWindow)
 		self.centralwidget.setObjectName("centralwidget")
@@ -426,11 +426,13 @@ class Ui_MainWindow(object):
 			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
 		self.updateFileConfig()
+		self.updateConfigFile()
 
 	def changeFile(self):
 		fileindex = self.filelistBox.currentIndex()
 		newfile = self.fileList[fileindex]
 		self.filename.setText(newfile)
+		self.updateConfigFile()
 	def removeFile(self):
 		if len(self.fileList) != 0:
 			fileindex = self.filelistBox.currentIndex()
@@ -438,6 +440,7 @@ class Ui_MainWindow(object):
 			self.fileList.pop(fileindex)
 			self.changeFile()
 			self.updateFileConfig()
+			self.updateConfigFile()
 		else:
 			return
 		
@@ -520,40 +523,57 @@ class Ui_MainWindow(object):
 
 	def plotUpdate(self,outputs: list):
 		qi,iq,bkg,q,sq,fq,r, gr = outputs
+		plotDct = {'I(Q)':[qi,iq,'Q (Å$^{-1}$)',self.plotlist[0]],
+					'S(Q)': [q,sq,'Q (Å$^{-1}$)',self.plotlist[1]],
+					'F(Q)': [q,fq,'Q (Å$^{-1}$)',self.plotlist[2]],
+					'G(r)': [r,gr,'r (Å)',self.plotlist[3]]}
+		
+		if self.noplots == 1:
+			self.ax.cla()
+			for item in plotDct:
+				if plotDct[item][-1]:
+					x = plotDct[item][0]
+					y = plotDct[item][1]
+					self.ax.plot(x,y)
+					if item == 'I(Q)':
+						self.ax.plot(x,bkg)
+					self.ax.set_xlabel(plotDct[item][2])
+					self.ax.set_xlim(x[0],x[-1])
+					self.ax.set_ylabel(item)
+		else:
+			for n in range(self.noplots):
+				self.ax[n].cla()
 
-		for n in range(self.noplots):
-			self.ax[n].cla()
+			plotno = 0
 
-		plotno = 0
+			for c,plot in enumerate(self.plotlist):
+				if plot:
+					if c == 0:
 
-		for c,plot in enumerate(self.plotlist):
-			if plot:
-				if c == 0:
+						self.ax[plotno].plot(qi,iq,label = 'total scattering')
+						self.ax[plotno].plot(qi,bkg,label = 'background')
+						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+						self.ax[plotno].set_ylabel('Intensity')
+						self.ax[plotno].legend()
+						self.ax[plotno].set_xlim(qi[0],qi[-1])
 
-					self.ax[plotno].plot(qi,iq,label = 'total scattering')
-					self.ax[plotno].plot(qi,bkg,label = 'background')
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-					self.ax[plotno].set_ylabel('Intensity')
-					self.ax[plotno].legend()
-					self.ax[plotno].set_xlim(qi[0],qi[-1])
-
-				elif c == 1:
-					self.ax[plotno].plot(q,sq)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-					self.ax[plotno].set_ylabel('S(Q)')
-					self.ax[plotno].set_xlim(q[0],q[-1])
-				elif c == 2:
-					self.ax[plotno].plot(q,fq)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-					self.ax[plotno].set_ylabel('F(Q)')
-					self.ax[plotno].set_xlim(q[0],q[-1])
-				elif c == 3:
-					self.ax[plotno].plot(r,gr)
-					self.ax[plotno].set_xlabel('r (Å)')
-					self.ax[plotno].set_ylabel('G(r)')
-					self.ax[plotno].set_xlim(r[0],r[-1])				
-				plotno += 1
-		plt.subplots_adjust(top = 0.99, bottom = 0.05, right = 0.99, left = 0.05, 
+					elif c == 1:
+						self.ax[plotno].plot(q,sq)
+						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+						self.ax[plotno].set_ylabel('S(Q)')
+						self.ax[plotno].set_xlim(q[0],q[-1])
+					elif c == 2:
+						self.ax[plotno].plot(q,fq)
+						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+						self.ax[plotno].set_ylabel('F(Q)')
+						self.ax[plotno].set_xlim(q[0],q[-1])
+					elif c == 3:
+						self.ax[plotno].plot(r,gr)
+						self.ax[plotno].set_xlabel('r (Å)')
+						self.ax[plotno].set_ylabel('G(r)')
+						self.ax[plotno].set_xlim(r[0],r[-1])				
+					plotno += 1
+		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
 		plt.show(block = False)
 		plt.pause(0.01)
@@ -619,7 +639,7 @@ class Ui_MainWindow(object):
 					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
 		string = ''
 		for item in self.paramDct:
-			newline = f'{item}:{self.paramDct[item][1]}'
+			newline = f'{item}: {self.paramDct[item][1]}'
 			if not newline.endswith('\n'):
 				newline += '\n'
 			string += newline
@@ -632,7 +652,7 @@ class Ui_MainWindow(object):
 		f.close()
 		for line in lines:
 			line = line.replace('\n','')
-			linesplit = line.split(':')
+			linesplit = line.split(': ')
 			widgetname = linesplit[0]
 			widgetvalue = linesplit[1]
 			if type(self.paramDct[widgetname][0]) == QtWidgets.QDoubleSpinBox:
