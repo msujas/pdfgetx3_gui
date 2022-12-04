@@ -16,9 +16,20 @@ import numpy as np
 import time
 matplotlib.rcParams.update({'font.size': 10})
 
+def bool_to_text(boolean: bool):
+	if boolean == True:
+		return 'True'
+	else:
+		return 'False'
+def text_to_bool(text: str):
+	if 'True' in text:
+		return True
+	elif 'False' in text:
+		return False
 
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
+
 
 	def __init__(self,file: str,bkgfile: str,bkgscale: float,composition: str, dataformat: str,qmin: float,qmax: float,qmaxinst: float, 
 	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float):
@@ -83,6 +94,26 @@ class Ui_MainWindow(object):
 		self.wavelengthLabel = QtWidgets.QLabel(self.centralwidget)
 		self.wavelengthLabel.setGeometry(QtCore.QRect(180, 110, 81, 16))
 		self.wavelengthLabel.setObjectName("wavelengthLabel")
+
+		self.filelistBox = QtWidgets.QComboBox(self.centralwidget)
+		self.filelistBox.setGeometry(QtCore.QRect(20, 150, 201, 22))
+		self.filelistBox.setObjectName("filelistBox")
+		self.fileListLabel = QtWidgets.QLabel(self.centralwidget)
+		self.fileListLabel.setGeometry(QtCore.QRect(230, 150, 55, 16))
+		self.fileListLabel.setObjectName("fileListLabel")
+
+		self.inputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
+		
+		self.QButton = QtWidgets.QRadioButton(self.centralwidget)
+		self.QButton.setGeometry(QtCore.QRect(400, 30, 121, 20))
+		self.QButton.setChecked(True)
+		self.QButton.setObjectName("QButton")
+		self.twothetaButton = QtWidgets.QRadioButton(self.centralwidget)
+		self.twothetaButton.setGeometry(QtCore.QRect(470, 30, 121, 20))
+		self.twothetaButton.setObjectName("twothetaButton")
+		
+		self.inputFormatGroup.addButton(self.QButton)
+		self.inputFormatGroup.addButton(self.twothetaButton)
 
 		self.outputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
 		
@@ -160,12 +191,6 @@ class Ui_MainWindow(object):
 		self.qmaxinstLabel = QtWidgets.QLabel(self.centralwidget)
 		self.qmaxinstLabel.setGeometry(QtCore.QRect(450, 310, 81, 16))
 		self.qmaxinstLabel.setObjectName("qmaxinstLabel")
-		self.filelistBox = QtWidgets.QComboBox(self.centralwidget)
-		self.filelistBox.setGeometry(QtCore.QRect(20, 150, 201, 22))
-		self.filelistBox.setObjectName("filelistBox")
-		self.fileListLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileListLabel.setGeometry(QtCore.QRect(230, 150, 55, 16))
-		self.fileListLabel.setObjectName("fileListLabel")
 		
 		self.removeButton = QtWidgets.QPushButton(self.centralwidget)
 		self.removeButton.setGeometry(QtCore.QRect(220, 180, 111, 28))
@@ -226,18 +251,7 @@ class Ui_MainWindow(object):
 		self.rstepLabel.setGeometry(QtCore.QRect(200, 370, 55, 16))
 		self.rstepLabel.setObjectName("rstepLabel")
 		
-		self.inputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
-		
-		self.QButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.QButton.setGeometry(QtCore.QRect(400, 30, 121, 20))
-		self.QButton.setChecked(True)
-		self.QButton.setObjectName("QButton")
-		self.twothetaButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.twothetaButton.setGeometry(QtCore.QRect(470, 30, 121, 20))
-		self.twothetaButton.setObjectName("twothetaButton")
-		
-		self.inputFormatGroup.addButton(self.QButton)
-		self.inputFormatGroup.addButton(self.twothetaButton)
+
 		
 
 		self.plotButton = QtWidgets.QPushButton(self.centralwidget)
@@ -294,10 +308,38 @@ class Ui_MainWindow(object):
 			self.filelistBox.addItem('')
 			self.filelistBox.setItemText(self.filelistBox.count()-1,os.path.basename(self.filename.text()))
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
-		self.filelistBox.currentTextChanged.connect(self.changeFile)
+
 		#self.plotButton.clicked.connect(self.run)
 		self.plotButton.clicked.connect(self.startWorker)
 		#self.updatePlotButton.clicked.connect(self.plotUpdate)
+
+		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
+					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
+					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
+					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
+					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
+					i in range(self.filelistBox.count())])],
+					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
+					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
+					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
+					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
+					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
+					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
+					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
+					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
+					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
+					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
+					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
+					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
+					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
+					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
+		self.configFile = 'pdfConfigFile.dat'
+		self.fileListFile = 'pdfFileList.dat'
+		if os.path.exists(self.configFile):
+			self.readConfigFile()
+		if os.path.exists(self.fileListFile):
+			self.readFileconfig()
+		self.filelistBox.currentTextChanged.connect(self.changeFile)
 
 		self.bkgscalebox.valueChanged.connect(self.updateBkgscale)
 		self.rminBox.valueChanged.connect(self.updateRmin)
@@ -309,6 +351,24 @@ class Ui_MainWindow(object):
 		self.qmaxinstbox.valueChanged.connect(self.updateQmaxinst)
 		self.rpolybox.valueChanged.connect(self.updateRpoly)
 		self.qmaxinstbox.valueChanged.connect(self.setQmax_max)
+
+		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
+		self.rminBox.valueChanged.connect(self.updateConfigFile)
+		self.rmaxBox.valueChanged.connect(self.updateConfigFile)
+		self.rstepBox.valueChanged.connect(self.updateConfigFile)
+		self.compositionBox.textChanged.connect(self.updateConfigFile)
+		self.qminbox.valueChanged.connect(self.updateConfigFile)
+		self.qmaxbox.valueChanged.connect(self.updateConfigFile)
+		self.qmaxinstbox.valueChanged.connect(self.updateConfigFile)
+		self.rpolybox.valueChanged.connect(self.updateConfigFile)
+		self.qmaxinstbox.valueChanged.connect(self.updateConfigFile)
+		self.iqCheckBox.clicked.connect(self.updateConfigFile)
+		self.sqCheckBox.clicked.connect(self.updateConfigFile)
+		self.fqCheckBox.clicked.connect(self.updateConfigFile)
+		self.grCheckBox.clicked.connect(self.updateConfigFile)
+		self.QButton.clicked.connect(self.updateConfigFile)
+		self.twothetaButton.clicked.connect(self.updateConfigFile)
+
 		
 	def retranslateUi(self, MainWindow):
 		_translate = QtCore.QCoreApplication.translate
@@ -365,6 +425,8 @@ class Ui_MainWindow(object):
 			self.filelistBox.addItem('')
 			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+		self.updateFileConfig()
+
 	def changeFile(self):
 		fileindex = self.filelistBox.currentIndex()
 		newfile = self.fileList[fileindex]
@@ -375,6 +437,7 @@ class Ui_MainWindow(object):
 			self.filelistBox.removeItem(fileindex)
 			self.fileList.pop(fileindex)
 			self.changeFile()
+			self.updateFileConfig()
 		else:
 			return
 		
@@ -458,7 +521,6 @@ class Ui_MainWindow(object):
 	def plotUpdate(self,outputs: list):
 		qi,iq,bkg,q,sq,fq,r, gr = outputs
 
-
 		for n in range(self.noplots):
 			self.ax[n].cla()
 
@@ -532,6 +594,81 @@ class Ui_MainWindow(object):
 		if self.running:
 			self.thread.composition = self.compositionBox.text()
 			self.thread.repeat = True
+	
+	def updateConfigFile(self):
+
+		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
+					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
+					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
+					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
+					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
+					i in range(self.filelistBox.count())])],
+					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
+					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
+					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
+					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
+					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
+					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
+					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
+					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
+					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
+					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
+					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
+					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
+					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
+					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
+		string = ''
+		for item in self.paramDct:
+			newline = f'{item}:{self.paramDct[item][1]}'
+			if not newline.endswith('\n'):
+				newline += '\n'
+			string += newline
+		f = open(self.configFile,'w')
+		f.write(string)
+		f.close()
+	def readConfigFile(self):
+		f = open(self.configFile,'r')
+		lines = f.readlines()
+		f.close()
+		for line in lines:
+			line = line.replace('\n','')
+			linesplit = line.split(':')
+			widgetname = linesplit[0]
+			widgetvalue = linesplit[1]
+			if type(self.paramDct[widgetname][0]) == QtWidgets.QDoubleSpinBox:
+				self.paramDct[widgetname][0].setValue(float(widgetvalue))
+			elif type(self.paramDct[widgetname][0]) == QtWidgets.QLineEdit:
+				self.paramDct[widgetname][0].setText(widgetvalue)
+			elif type(self.paramDct[widgetname][0]) == QtWidgets.QCheckBox or type(self.paramDct[widgetname][0]) == QtWidgets.QRadioButton:
+				self.paramDct[widgetname][0].setChecked(text_to_bool(widgetvalue))
+			'''
+			elif type(self.paramDct[widgetname][0]) == QtWidgets.QComboBox:
+				widgetlist = widgetvalue.split(',')
+				for item in widgetlist:
+					self.paramDct[widgetname][0].addItem('')
+					self.paramDct[widgetname][0].setItemText(self.filelistBox.count()-1,widgetname)
+					self.paramDct[widgetname][0].setCurrentIndex(self.filelistBox.count()-1)
+			'''
+	def readFileconfig(self):
+		f = open(self.fileListFile,'r')
+		lines = f.readlines()
+		f.close()
+		self.fileList = []
+		self.filelistBox.clear()
+		for line in lines:
+			line = line.replace('\n','')
+			self.fileList.append(line)
+			basefilename = os.path.basename(line)
+			self.filelistBox.addItem('')
+			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
+			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+	def updateFileConfig(self):
+		string = ''
+		for item in self.fileList:
+			string += f'{item}\n'
+		f = open(self.fileListFile,'w')
+		f.write(string)
+		f.close()
 
 
 if __name__ == "__main__":
