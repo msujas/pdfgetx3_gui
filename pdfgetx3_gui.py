@@ -134,7 +134,7 @@ class Ui_MainWindow(object):
 		self.bkgscalebox.setGeometry(QtCore.QRect(371, 190, 61, 22))
 		self.bkgscalebox.setProperty("value", 1)
 		self.bkgscalebox.setObjectName("bkgscalebox")
-		self.bkgscalebox.setDecimals(1)
+		self.bkgscalebox.setDecimals(2)
 		self.bkgscalebox.setSingleStep(0.1)
 		
 		self.qminbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
@@ -150,7 +150,7 @@ class Ui_MainWindow(object):
 		self.qmaxbox.setObjectName("qmaxbox")
 		self.qmaxbox.setDecimals(1)
 		self.qmaxbox.setSingleStep(0.1)
-
+		self.qmaxbox.setMinimum(self.qminbox.value()+1)
 		
 		self.rpolybox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.rpolybox.setGeometry(QtCore.QRect(371, 340, 61, 21))
@@ -158,7 +158,7 @@ class Ui_MainWindow(object):
 		self.rpolybox.setProperty("value", 1)
 		self.rpolybox.setObjectName("rpolybox")
 		self.rpolybox.setSingleStep(0.1)
-		self.rpolybox.setDecimals(1)
+		self.rpolybox.setDecimals(2)
 		
 		self.qmaxinstbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.qmaxinstbox.setGeometry(QtCore.QRect(371, 310, 61, 21))
@@ -166,6 +166,7 @@ class Ui_MainWindow(object):
 		self.qmaxinstbox.setObjectName("qmaxinstbox")
 		self.qmaxinstbox.setDecimals(1)
 		self.qmaxinstbox.setSingleStep(0.1)
+		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
 		
 		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
 		self.fileLabel.setGeometry(QtCore.QRect(300, 10, 55, 16))
@@ -292,6 +293,7 @@ class Ui_MainWindow(object):
 		self.sqcheck = None
 		self.fqcheck = None
 		self.grcheck = None
+
 		
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 		self.actionOpen.triggered.connect(self.open_file)
@@ -299,6 +301,7 @@ class Ui_MainWindow(object):
 		self.bkgfilebutton.clicked.connect(self.open_bkgfile)
 		self.removeButton.clicked.connect(self.removeFile)
 		self.saveButton.clicked.connect(self.saveFile)
+		self.saveButton.clicked.connect(self.write_iq_file)
 
 		self.running = False
 		self.fileList = []
@@ -346,10 +349,11 @@ class Ui_MainWindow(object):
 		self.rstepBox.valueChanged.connect(self.updateRstep)
 		self.compositionBox.textChanged.connect(self.updateComposition)
 		self.qminbox.valueChanged.connect(self.updateQmin)
+		self.qminbox.valueChanged.connect(self.setQmax_lims)
 		self.qmaxbox.valueChanged.connect(self.updateQmax)
 		self.qmaxinstbox.valueChanged.connect(self.updateQmaxinst)
 		self.rpolybox.valueChanged.connect(self.updateRpoly)
-		self.qmaxinstbox.valueChanged.connect(self.setQmax_max)
+		self.qmaxinstbox.valueChanged.connect(self.setQmax_lims)
 
 		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
 		self.rminBox.valueChanged.connect(self.updateConfigFile)
@@ -371,7 +375,7 @@ class Ui_MainWindow(object):
 		
 	def retranslateUi(self, MainWindow):
 		_translate = QtCore.QCoreApplication.translate
-		MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+		MainWindow.setWindowTitle(_translate("MainWindow", "PDFgetX3 GUI"))
 		#self.gudrunFormat.setText(_translate("MainWindow", "gudrun format"))
 		#self.pdfgetxFormat.setText(_translate("MainWindow", "pdfgetx format"))
 		self.fileLabel.setText(_translate("MainWindow", "file"))
@@ -465,10 +469,13 @@ class Ui_MainWindow(object):
 			print('no outputs selected to plot')
 			return
 	
-	def setQmax_max(self):
+	def setQmax_lims(self):
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
+		self.qmaxbox.setMinimum(self.qminbox.value()+1)
+		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
 
 	def startWorker(self):
+		self.plotted = False
 		if self.running:
 			plt.close()
 			self.thread.stop()
@@ -521,12 +528,12 @@ class Ui_MainWindow(object):
 
 
 	def plotUpdate(self,outputs: list):
-		qi,iq,bkg,q,sq,fq,r, gr = outputs
-		plotDct = {'I(Q)':[qi,iq,'Q (Å$^{-1}$)',self.plotlist[0]],
-					'S(Q)': [q,sq,'Q (Å$^{-1}$)',self.plotlist[1]],
-					'F(Q)': [q,fq,'Q (Å$^{-1}$)',self.plotlist[2]],
-					'G(r)': [r,gr,'r (Å)',self.plotlist[3]]}
-		
+		self.qi,self.iq,self.bkg,self.q,self.sq,self.fq,self.r, self.gr = outputs
+		plotDct = {'I(Q)':[self.qi,self.iq,'Q (Å$^{-1}$)',self.plotlist[0]],
+					'S(Q)': [self.q,self.sq,'Q (Å$^{-1}$)',self.plotlist[1]],
+					'F(Q)': [self.q,self.fq,'Q (Å$^{-1}$)',self.plotlist[2]],
+					'G(r)': [self.r,self.gr,'r (Å)',self.plotlist[3]]}
+
 		if self.noplots == 1:
 			self.ax.cla()
 			for item in plotDct:
@@ -549,34 +556,48 @@ class Ui_MainWindow(object):
 				if plot:
 					if c == 0:
 
-						self.ax[plotno].plot(qi,iq,label = 'total scattering')
-						self.ax[plotno].plot(qi,bkg,label = 'background')
+						self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering')
+						self.ax[plotno].plot(self.qi,self.bkg,label = 'background')
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('Intensity')
 						self.ax[plotno].legend()
-						self.ax[plotno].set_xlim(qi[0],qi[-1])
+						self.ax[plotno].set_xlim(self.qi[0],self.qi[-1])
 
 					elif c == 1:
-						self.ax[plotno].plot(q,sq)
+						self.ax[plotno].plot(self.q,self.sq)
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('S(Q)')
-						self.ax[plotno].set_xlim(q[0],q[-1])
+						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 					elif c == 2:
-						self.ax[plotno].plot(q,fq)
+						self.ax[plotno].plot(self.q,self.fq)
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('F(Q)')
-						self.ax[plotno].set_xlim(q[0],q[-1])
+						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 					elif c == 3:
-						self.ax[plotno].plot(r,gr)
+						self.ax[plotno].plot(self.r,self.gr)
 						self.ax[plotno].set_xlabel('r (Å)')
 						self.ax[plotno].set_ylabel('G(r)')
-						self.ax[plotno].set_xlim(r[0],r[-1])				
+						self.ax[plotno].set_xlim(self.r[0],self.r[-1])				
 					plotno += 1
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
-		plt.show(block = False)
+		if not self.plotted:
+			plt.show(block = False)
+			self.plotted = True
+		else:
+			self.fig.canvas.flush_events()
 		plt.pause(0.01)
 
+	def write_iq_file(self):
+		if self.iqcheck:
+			basename = os.path.splitext(self.filename.text())[0]
+			outfile = f'{basename}.iq'
+			iqsub = self.iq-self.bkg
+			np.savetxt(outfile,np.array([self.qi,iqsub]).transpose())
+			if self.twothetaButton.isChecked():
+				outfilexy = f'{basename}_bkgsub.xy'
+				twotheta = 2*np.arcsin(float(self.wavelengthBox.text())*self.qi/(4*np.pi))*180/np.pi
+				np.savetxt(outfilexy,np.array([twotheta,iqsub]).transpose())
 	def updateQmin(self):
 		if self.running:
 			self.thread.qmin = self.qminbox.value()
