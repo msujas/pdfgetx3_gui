@@ -581,12 +581,10 @@ class Ui_MainWindow(object):
 					plotno += 1
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
-		if not self.plotted:
-			plt.show(block = False)
-			self.plotted = True
-		else:
-			self.fig.canvas.flush_events()
+		plt.show()
 		plt.pause(0.01)
+		self.centralwidget.activateWindow()
+
 
 	def write_iq_file(self):
 		if self.iqcheck:
