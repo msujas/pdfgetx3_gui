@@ -16,12 +16,12 @@ import numpy as np
 import time
 matplotlib.rcParams.update({'font.size': 10})
 
-def bool_to_text(boolean: bool):
+def bool_to_text(boolean: bool) -> str:
 	if boolean == True:
 		return 'True'
 	else:
 		return 'False'
-def text_to_bool(text: str):
+def text_to_bool(text: str) -> bool:
 	if 'True' in text:
 		return True
 	elif 'False' in text:
