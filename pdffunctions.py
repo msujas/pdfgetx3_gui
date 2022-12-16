@@ -46,11 +46,17 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck
 	for n in range(len(plotlist)):
 		if n:
 			if n == 1:
-				pdfcalc.writeOutput(filename = outfile+'.sq', outputtype = 'sq')
+				sqfile = f'{outfile}.sq'
+				pdfcalc.writeOutput(filename = sqfile, outputtype = 'sq')
+				print(f'writing {sqfile}')
 			elif n == 2:
-				pdfcalc.writeOutput(filename = outfile+'.fq', outputtype = 'fq')
+				fqfile = f'{outfile}.fq'
+				pdfcalc.writeOutput(filename = fqfile, outputtype = 'fq')
+				print(f'writing {fqfile}')
 			elif n == 3:
+				grfile = f'{outfile}.gr'
 				pdfcalc.writeOutput(filename = outfile+'.gr', outputtype = 'gr')
+				print(f'writing {grfile}')
 			
 	
 	
