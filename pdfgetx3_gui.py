@@ -438,8 +438,8 @@ class Ui_MainWindow(object):
 					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
-		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file',
-		filter = filter)
+		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
+		directory=os.path.dirname(self.filename.text()))
 
 		basefilename = os.path.basename(dialog[0])
 		
@@ -481,8 +481,8 @@ class Ui_MainWindow(object):
 	def open_bkgfile(self):
 		#dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
-		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file',
-		filter = filter)
+		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select background file',	filter = filter,
+		directory=os.path.dirname(self.bkgfilename.text()))
 		if dialog[0] != '':
 			self.bkgfileList.append(dialog[0])
 			basefilename = os.path.basename(dialog[0])
