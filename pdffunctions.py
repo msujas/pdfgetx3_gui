@@ -4,14 +4,11 @@ import numpy as np
 import matplotlib
 
 matplotlib.rcParams.update({'font.size': 12})
-from diffpy.pdfgetx.version import __version__
 
-from diffpy.pdfgetx.pdfconfig import PDFConfig, loadPDFConfig
+from diffpy.pdfgetx.pdfconfig import PDFConfig
 from diffpy.pdfgetx.pdfgetter import PDFGetter
-from diffpy.pdfgetx.transformation import Transformation
-from diffpy.pdfgetx.functs import loaddata, findfiles
 
-from diffpy.pdfgetx.functs import loadData
+
 
 def run_pdfgetx3(file: str,bkgfile: str,bkgscale: float,composition: str, qmin: float,qmax: float,qmaxinst: float,rpoly: float,
 dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2):

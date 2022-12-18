@@ -10,3 +10,9 @@ exampleFiles/Xray*
 exampleFiles/.ipynb_checkpoints*
 pdfFileList.dat
 pdfConfigFile.dat
+exampleFiles/pdfgetxoutput/*
+exampleFiles/0p4mm_capillary_018_av17_monitor.XYEtxt
+exampleFiles/capillary.XYtxt
+exampleFiles/startup.txt
+exampleFiles/BeamParameters.txt
+exampleFiles/capillary.xy
