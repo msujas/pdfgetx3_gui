@@ -16,12 +16,12 @@ import numpy as np
 import time
 matplotlib.rcParams.update({'font.size': 10})
 
-def bool_to_text(boolean: bool):
+def bool_to_text(boolean: bool) -> str:
 	if boolean == True:
 		return 'True'
 	else:
 		return 'False'
-def text_to_bool(text: str):
+def text_to_bool(text: str) -> bool:
 	if 'True' in text:
 		return True
 	elif 'False' in text:
@@ -101,6 +101,24 @@ class Ui_MainWindow(object):
 		self.fileListLabel = QtWidgets.QLabel(self.centralwidget)
 		self.fileListLabel.setGeometry(QtCore.QRect(230, 150, 55, 16))
 		self.fileListLabel.setObjectName("fileListLabel")
+
+		self.bkgfilelistBox = QtWidgets.QComboBox(self.centralwidget)
+		self.bkgfilelistBox.setGeometry(QtCore.QRect(20, 220, 201, 22))
+		self.bkgfilelistBox.setObjectName("bkgfilelistBox")
+		self.bkgfileListLabel = QtWidgets.QLabel(self.centralwidget)
+		self.bkgfileListLabel.setGeometry(QtCore.QRect(230, 220, 55, 16))
+		self.bkgfileListLabel.setObjectName("bkgfileListLabel")
+		self.bkgfileListLabel.setText('background\nfiles')
+		self.bkgfileListLabel.adjustSize()
+
+		self.removeButton = QtWidgets.QPushButton(self.centralwidget)
+		self.removeButton.setGeometry(QtCore.QRect(20, 180, 111, 28))
+		self.removeButton.setObjectName("removeButton")
+
+		self.bkgremoveButton = QtWidgets.QPushButton(self.centralwidget)
+		self.bkgremoveButton.setGeometry(QtCore.QRect(20, 250, 111, 28))
+		self.bkgremoveButton.setObjectName("bkgremoveButton")
+		self.bkgremoveButton.setText('remove bkg file')
 
 		self.inputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
 		
@@ -193,9 +211,7 @@ class Ui_MainWindow(object):
 		self.qmaxinstLabel.setGeometry(QtCore.QRect(450, 310, 81, 16))
 		self.qmaxinstLabel.setObjectName("qmaxinstLabel")
 		
-		self.removeButton = QtWidgets.QPushButton(self.centralwidget)
-		self.removeButton.setGeometry(QtCore.QRect(220, 180, 111, 28))
-		self.removeButton.setObjectName("removeButton")
+
 
 		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
 		self.bkgfilebutton.setGeometry(QtCore.QRect(250, 40, 41, 28))
@@ -300,11 +316,13 @@ class Ui_MainWindow(object):
 		self.fileButton.clicked.connect(self.open_file)
 		self.bkgfilebutton.clicked.connect(self.open_bkgfile)
 		self.removeButton.clicked.connect(self.removeFile)
+		self.bkgremoveButton.clicked.connect(self.removeBkgFile)
 		self.saveButton.clicked.connect(self.saveFile)
 		self.saveButton.clicked.connect(self.write_iq_file)
 
 		self.running = False
 		self.fileList = []
+		self.bkgfileList = []
 		if self.filename != '':
 			self.fileList.append(self.filename.text())
 			self.filelistBox.addItem('')
@@ -315,33 +333,16 @@ class Ui_MainWindow(object):
 		self.plotButton.clicked.connect(self.startWorker)
 		#self.updatePlotButton.clicked.connect(self.plotUpdate)
 
-		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
-					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
-					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
-					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
-					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
-					i in range(self.filelistBox.count())])],
-					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
-					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
-					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
-					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
-					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
-					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
-					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
-					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
-					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
-					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
-					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
-					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
-					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
-					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
+		self.updateParamDct()
 		self.configFile = 'pdfConfigFile.dat'
 		self.fileListFile = 'pdfFileList.dat'
+		self.bkgfileListFile = 'pdfBkgFileList.dat'
 		if os.path.exists(self.configFile):
 			self.readConfigFile()
 		if os.path.exists(self.fileListFile):
 			self.readFileconfig()
 		self.filelistBox.currentTextChanged.connect(self.changeFile)
+		self.bkgfilelistBox.currentTextChanged.connect(self.bkgchangeFile)
 
 		self.bkgscalebox.valueChanged.connect(self.updateBkgscale)
 		self.rminBox.valueChanged.connect(self.updateRmin)
@@ -414,11 +415,31 @@ class Ui_MainWindow(object):
 		self.rminLabel.setText(_translate("MainWindow", "rmin (Å)"))
 		self.rmaxLablel.setText(_translate("MainWindow", "rmax (Å)"))
 		self.rstepLabel.setText(_translate("MainWindow", "rstep (Å)"))
-		
+	def updateParamDct(self):
+		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
+					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
+					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
+					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
+					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
+					i in range(self.filelistBox.count())])],
+					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
+					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
+					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
+					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
+					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
+					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
+					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
+					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
+					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
+					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
+					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
+					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
+					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
+					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
-		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file',
-		filter = filter)
+		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
+		directory=os.path.dirname(self.filename.text()))
 
 		basefilename = os.path.basename(dialog[0])
 		
@@ -437,7 +458,7 @@ class Ui_MainWindow(object):
 		self.filename.setText(newfile)
 		self.updateConfigFile()
 	def removeFile(self):
-		if len(self.fileList) != 0:
+		if len(self.fileList) > 1:
 			fileindex = self.filelistBox.currentIndex()
 			self.filelistBox.removeItem(fileindex)
 			self.fileList.pop(fileindex)
@@ -445,16 +466,40 @@ class Ui_MainWindow(object):
 			self.updateFileConfig()
 			self.updateConfigFile()
 		else:
-			return
+			print('can\'t remove last file')
+	def removeBkgFile(self):
+		if len(self.bkgfileList) > 1:
+			fileindex = self.bkgfilelistBox.currentIndex()
+			self.bkgfilelistBox.removeItem(fileindex)
+			self.bkgfileList.pop(fileindex)
+			self.bkgchangeFile()
+			self.updateBkgFileConfig()
+			self.updateConfigFile()
+		else:
+			print('can\'t remove last file')
 		
 	def open_bkgfile(self):
 		#dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
-		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file',
-		filter = filter)
-
-		basefilename = os.path.basename(dialog[0])
-		self.bkgfilename.setText(dialog[0])
+		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select background file',	filter = filter,
+		directory=os.path.dirname(self.bkgfilename.text()))
+		if dialog[0] != '':
+			self.bkgfileList.append(dialog[0])
+			basefilename = os.path.basename(dialog[0])
+			self.bkgfilename.setText(dialog[0])
+			self.bkgfilelistBox.addItem('')
+			self.bkgfilelistBox.setItemText(self.bkgfilelistBox.count()-1,basefilename)
+			self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
+		self.updateBkgFileConfig()
+		self.updateConfigFile()
+	def bkgchangeFile(self):
+		if len(self.bkgfileList) <= 1:
+			print('can\'t remove last file')
+			return
+		fileindex = self.bkgfilelistBox.currentIndex()
+		newfile = self.bkgfileList[fileindex]
+		self.bkgfilename.setText(newfile)
+		self.updateBkgFileConfig()
 
 	def saveFile(self):
 		
@@ -591,9 +636,11 @@ class Ui_MainWindow(object):
 			basename = os.path.splitext(self.filename.text())[0]
 			outfile = f'{basename}.iq'
 			iqsub = self.iq-self.bkg
+			print(f'writing {outfile}')
 			np.savetxt(outfile,np.array([self.qi,iqsub]).transpose())
 			if self.twothetaButton.isChecked():
 				outfilexy = f'{basename}_bkgsub.xy'
+				print(f'writing {outfilexy}')
 				twotheta = 2*np.arcsin(float(self.wavelengthBox.text())*self.qi/(4*np.pi))*180/np.pi
 				np.savetxt(outfilexy,np.array([twotheta,iqsub]).transpose())
 	def updateQmin(self):
@@ -635,26 +682,7 @@ class Ui_MainWindow(object):
 	
 	def updateConfigFile(self):
 
-		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
-					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
-					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
-					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
-					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
-					i in range(self.filelistBox.count())])],
-					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
-					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
-					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
-					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
-					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
-					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
-					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
-					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
-					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
-					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
-					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
-					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
-					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
-					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
+		self.updateParamDct()
 		string = ''
 		for item in self.paramDct:
 			newline = f'{item}: {self.paramDct[item][1]}'
@@ -693,6 +721,8 @@ class Ui_MainWindow(object):
 		f.close()
 		self.fileList = []
 		self.filelistBox.clear()
+		self.bkgfileList = []
+		self.bkgfilelistBox.clear()
 		for line in lines:
 			line = line.replace('\n','')
 			self.fileList.append(line)
@@ -700,11 +730,30 @@ class Ui_MainWindow(object):
 			self.filelistBox.addItem('')
 			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+		if not os.path.exists(self.bkgfileListFile):
+			return
+		f = open(self.bkgfileListFile,'r')
+		lines = f.readlines()
+		f.close()
+		for line in lines:
+			line = line.replace('\n','')
+			self.bkgfileList.append(line)
+			basefilename = os.path.basename(line)
+			self.bkgfilelistBox.addItem('')
+			self.bkgfilelistBox.setItemText(self.bkgfilelistBox.count()-1,basefilename)
+			self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
 	def updateFileConfig(self):
 		string = ''
 		for item in self.fileList:
 			string += f'{item}\n'
 		f = open(self.fileListFile,'w')
+		f.write(string)
+		f.close()
+	def updateBkgFileConfig(self):
+		string = ''
+		for item in self.bkgfileList:
+			string += f'{item}\n'
+		f = open(self.bkgfileListFile,'w')
 		f.write(string)
 		f.close()
 

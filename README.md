@@ -1,4 +1,4 @@
 # pdfgetx3_gui
-a gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3, but not quite as good as XPDFsuite. Requires PDFGetX3 https://www.diffpy.org/products/pdfgetx.html.
+A gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3, but lacks some features of XPDFsuite. Requires PDFgetX3 https://www.diffpy.org/products/pdfgetx.html, and PyQt(5) (pip or conda). The pdfgetx3_gui.py and pdffunctions.py scripts in the repository are required to run it.
 
-Plots should update by changing values in the boxes. To run do "python pdfgetx3_gui.py" in the terminal.
+To run do "python pdfgetx3_gui.py" in the terminal. Plots update on changing parameter values. Log files are made to store the current configuration so the settings are the same on rerunning the script.
