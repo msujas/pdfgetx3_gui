@@ -141,7 +141,7 @@ class Ui_MainWindow(object):
 		self.qminbox.setGeometry(QtCore.QRect(371, 230, 61, 22))
 		self.qminbox.setProperty("value", 1)
 		self.qminbox.setObjectName("qminbox")
-		self.qminbox.setDecimals(1)
+		self.qminbox.setDecimals(2)
 		self.qminbox.setSingleStep(0.1)
 		
 		self.qmaxbox = QtWidgets.QDoubleSpinBox(self.centralwidget)

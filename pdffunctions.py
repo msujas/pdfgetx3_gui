@@ -8,10 +8,10 @@ from diffpy.pdfgetx.version import __version__
 
 from diffpy.pdfgetx.pdfconfig import PDFConfig, loadPDFConfig
 from diffpy.pdfgetx.pdfgetter import PDFGetter
-from diffpy.pdfgetx.transformation import Transformation
-from diffpy.pdfgetx.functs import loaddata, findfiles
-
-from diffpy.pdfgetx.functs import loadData
+#from diffpy.pdfgetx.transformation import Transformation
+#from diffpy.pdfgetx.functs import loaddata, findfiles
+#
+#from diffpy.pdfgetx.functs import loadData
 
 def run_pdfgetx3(file: str,bkgfile: str,bkgscale: float,composition: str, qmin: float,qmax: float,qmaxinst: float,rpoly: float,
 dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2):
@@ -42,9 +42,11 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck
 	pdfcalc(filename = file)
 	outfile = os.path.splitext(file)[0]
 	plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
-	outputtypestring = ''
+
 	for n in range(len(plotlist)):
 		if n:
+			#if n == 0:
+			#	pdfcalc.writeOutput(filename = outfile+'.iq', outputtype = 'iq')
 			if n == 1:
 				pdfcalc.writeOutput(filename = outfile+'.sq', outputtype = 'sq')
 			elif n == 2:
