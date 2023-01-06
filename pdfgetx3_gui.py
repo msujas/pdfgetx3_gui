@@ -155,7 +155,7 @@ class Ui_MainWindow(object):
 		self.bkgscalebox.setGeometry(QtCore.QRect(450, 190, 61, 22))
 		self.bkgscalebox.setProperty("value", 1)
 		self.bkgscalebox.setObjectName("bkgscalebox")
-		self.bkgscalebox.setDecimals(2)
+		self.bkgscalebox.setDecimals(3)
 		self.bkgscalebox.setSingleStep(0.1)
 		self.bkgscalebox.setKeyboardTracking(False)
 
@@ -163,7 +163,7 @@ class Ui_MainWindow(object):
 		self.bkgscalerel.setGeometry(QtCore.QRect(520, 190, 61, 22))
 		self.bkgscalerel.setProperty("value", 0.1)
 		self.bkgscalerel.setObjectName("bkgscalerel")
-		self.bkgscalerel.setDecimals(2)
+		self.bkgscalerel.setDecimals(3)
 		self.bkgscalerel.setSingleStep(0.01)
 		self.bkgscalerel.setMinimum(-1)
 		self.bkgscalerel.setMaximum(1)
