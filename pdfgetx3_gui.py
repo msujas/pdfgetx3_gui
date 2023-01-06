@@ -587,7 +587,7 @@ class Ui_MainWindow(object):
 					y = plotDct[item][1]
 					self.ax.plot(x,y)
 					if item == 'I(Q)':
-						self.ax.plot(x,bkg)
+						self.ax.plot(x,self.bkg)
 					self.ax.set_xlabel(plotDct[item][2])
 					self.ax.set_xlim(x[0],x[-1])
 					self.ax.set_ylabel(item)
