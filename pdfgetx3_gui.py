@@ -146,45 +146,144 @@ class Ui_MainWindow(object):
 		#self.outputFormatGroup.addButton(self.gudrunFormat)
 		#self.outputFormatGroup.addButton(self.pdfgetxFormat)
 		
-
+		self.relLabel = QtWidgets.QLabel(self.centralwidget)
+		self.relLabel.setGeometry(QtCore.QRect(520, 170, 121, 16))
+		self.relLabel.setObjectName("relLabel")
+		self.relLabel.setText('relative')
 		
 		self.bkgscalebox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.bkgscalebox.setGeometry(QtCore.QRect(371, 190, 61, 22))
+		self.bkgscalebox.setGeometry(QtCore.QRect(450, 190, 61, 22))
 		self.bkgscalebox.setProperty("value", 1)
 		self.bkgscalebox.setObjectName("bkgscalebox")
 		self.bkgscalebox.setDecimals(2)
 		self.bkgscalebox.setSingleStep(0.1)
-		
+		self.bkgscalebox.setKeyboardTracking(False)
+
+		self.bkgscalerel = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.bkgscalerel.setGeometry(QtCore.QRect(520, 190, 61, 22))
+		self.bkgscalerel.setProperty("value", 0.1)
+		self.bkgscalerel.setObjectName("bkgscalerel")
+		self.bkgscalerel.setDecimals(2)
+		self.bkgscalerel.setSingleStep(0.01)
+		self.bkgscalerel.setMinimum(-1)
+		self.bkgscalerel.setMaximum(1)
+
+		self.bkgscalerelButton = QtWidgets.QPushButton(self.centralwidget)
+		self.bkgscalerelButton.setGeometry(QtCore.QRect(590, 190, 61, 22))
+		self.bkgscalerelButton.setText('move rel.')
+		self.bkgscalerelButton.setObjectName('bkgscalerelButton')
+
+		self.bkgscaleLabel = QtWidgets.QLabel(self.centralwidget)
+		self.bkgscaleLabel.setGeometry(QtCore.QRect(371, 190, 121, 16))
+		self.bkgscaleLabel.setObjectName("bkgscaleLabel")
+
 		self.qminbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qminbox.setGeometry(QtCore.QRect(371, 230, 61, 22))
+		self.qminbox.setGeometry(QtCore.QRect(450, 230, 61, 22))
 		self.qminbox.setProperty("value", 1)
 		self.qminbox.setObjectName("qminbox")
 		self.qminbox.setDecimals(2)
 		self.qminbox.setSingleStep(0.1)
+		self.qminbox.setKeyboardTracking(False)
+
+		self.qminrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.qminrel.setGeometry(QtCore.QRect(520, 230, 61, 22))
+		self.qminrel.setProperty("value", 0.1)
+		self.qminrel.setObjectName("qminrel")
+		self.qminrel.setDecimals(2)
+		self.qminrel.setSingleStep(0.01)
+		self.qminrel.setMinimum(-1)
+		self.qminrel.setMaximum(1)
+
+		self.qminrelButton = QtWidgets.QPushButton(self.centralwidget)
+		self.qminrelButton.setGeometry(QtCore.QRect(590, 230, 61, 22))
+		self.qminrelButton.setText('move rel.')
+		self.qminrelButton.setObjectName("qminrelButton")
+
+		self.QminLabel = QtWidgets.QLabel(self.centralwidget)
+		self.QminLabel.setGeometry(QtCore.QRect(371, 230, 71, 16))
+		self.QminLabel.setObjectName("QminLabel")
 		
 		self.qmaxbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qmaxbox.setGeometry(QtCore.QRect(371, 270, 61, 22))
+		self.qmaxbox.setGeometry(QtCore.QRect(450, 270, 61, 22))
 		self.qmaxbox.setProperty("value", 23)
 		self.qmaxbox.setObjectName("qmaxbox")
 		self.qmaxbox.setDecimals(1)
 		self.qmaxbox.setSingleStep(0.1)
 		self.qmaxbox.setMinimum(self.qminbox.value()+1)
-		
-		self.rpolybox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.rpolybox.setGeometry(QtCore.QRect(371, 340, 61, 21))
-		self.rpolybox.setMaximum(5)
-		self.rpolybox.setProperty("value", 1)
-		self.rpolybox.setObjectName("rpolybox")
-		self.rpolybox.setSingleStep(0.1)
-		self.rpolybox.setDecimals(2)
-		
+		self.qmaxbox.setKeyboardTracking(False)
+
+		self.qmaxrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.qmaxrel.setGeometry(QtCore.QRect(520, 270, 61, 22))
+		self.qmaxrel.setProperty("value", 0.1)
+		self.qmaxrel.setObjectName("qmaxrel")
+		self.qmaxrel.setDecimals(1)
+		self.qmaxrel.setSingleStep(0.1)
+		self.qmaxrel.setMinimum(-1)
+		self.qmaxrel.setMaximum(1)
+
+		self.qmaxrelButton = QtWidgets.QPushButton(self.centralwidget)
+		self.qmaxrelButton.setGeometry(QtCore.QRect(590, 270, 61, 22))
+		self.qmaxrelButton.setText('move rel.')
+		self.qmaxrelButton.setObjectName('qmaxrelButton')
+
+		self.QmaxLabel = QtWidgets.QLabel(self.centralwidget)
+		self.QmaxLabel.setGeometry(QtCore.QRect(371, 270, 71, 16))
+		self.QmaxLabel.setObjectName("QmaxLabel")
+				
 		self.qmaxinstbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qmaxinstbox.setGeometry(QtCore.QRect(371, 310, 61, 21))
+		self.qmaxinstbox.setGeometry(QtCore.QRect(450, 310, 61, 21))
 		self.qmaxinstbox.setProperty("value", 23)
 		self.qmaxinstbox.setObjectName("qmaxinstbox")
 		self.qmaxinstbox.setDecimals(1)
 		self.qmaxinstbox.setSingleStep(0.1)
 		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
+		self.qmaxinstbox.setKeyboardTracking(False)
+
+		self.qmaxinstrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.qmaxinstrel.setGeometry(QtCore.QRect(520, 310, 61, 21))
+		self.qmaxinstrel.setProperty("value", 0.1)
+		self.qmaxinstrel.setObjectName("qmaxinstrel")
+		self.qmaxinstrel.setDecimals(1)
+		self.qmaxinstrel.setSingleStep(0.1)
+		self.qmaxinstrel.setMaximum(1)
+		self.qmaxinstrel.setMinimum(-1)
+
+		self.qmaxinstrelButton = QtWidgets.QPushButton(self.centralwidget)
+		self.qmaxinstrelButton.setGeometry(QtCore.QRect(590, 310, 61, 22))
+		self.qmaxinstrelButton.setText('move rel.')
+		self.qmaxinstrelButton.setObjectName('qmaxinstrelButton')
+
+		self.qmaxinstLabel = QtWidgets.QLabel(self.centralwidget)
+		self.qmaxinstLabel.setGeometry(QtCore.QRect(371, 310, 81, 16))
+		self.qmaxinstLabel.setObjectName("qmaxinstLabel")
+
+		self.rpolybox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.rpolybox.setGeometry(QtCore.QRect(450, 350, 61, 21))
+		self.rpolybox.setMaximum(3)
+		self.rpolybox.setProperty("value", 1)
+		self.rpolybox.setObjectName("rpolybox")
+		self.rpolybox.setSingleStep(0.1)
+		self.rpolybox.setDecimals(2)
+		self.rpolybox.setKeyboardTracking(False)
+
+		self.rpolyrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.rpolyrel.setGeometry(QtCore.QRect(520, 350, 61, 21))
+		self.rpolyrel.setMaximum(5)
+		self.rpolyrel.setProperty("value", 0.1)
+		self.rpolyrel.setObjectName("rpolyrel")
+		self.rpolyrel.setSingleStep(0.01)
+		self.rpolyrel.setDecimals(2)
+		self.rpolyrel.setMaximum(1)
+		self.rpolyrel.setMinimum(-1)
+
+		self.rpolyrelButton = QtWidgets.QPushButton(self.centralwidget)
+		self.rpolyrelButton.setGeometry(QtCore.QRect(590, 350, 61, 22))
+		self.rpolyrelButton.setText('move rel.')
+		self.rpolyrelButton.setObjectName('rpolyrelButton')
+
+		self.rpolyLabel = QtWidgets.QLabel(self.centralwidget)
+		self.rpolyLabel.setGeometry(QtCore.QRect(371, 350, 81, 16))
+		self.rpolyLabel.setObjectName("rpolyLabel")
 		
 		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
 		self.fileLabel.setGeometry(QtCore.QRect(300, 10, 55, 16))
@@ -192,25 +291,6 @@ class Ui_MainWindow(object):
 		self.bkgFileLabel = QtWidgets.QLabel(self.centralwidget)
 		self.bkgFileLabel.setGeometry(QtCore.QRect(300, 40, 101, 31))
 		self.bkgFileLabel.setObjectName("bkgFileLabel")
-		self.bkgscaleLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgscaleLabel.setGeometry(QtCore.QRect(450, 190, 121, 16))
-		self.bkgscaleLabel.setObjectName("bkgscaleLabel")
-		self.rpolyLabel = QtWidgets.QLabel(self.centralwidget)
-		self.rpolyLabel.setGeometry(QtCore.QRect(450, 340, 81, 16))
-		self.rpolyLabel.setObjectName("rpolyLabel")
-		self.QminLabel = QtWidgets.QLabel(self.centralwidget)
-		self.QminLabel.setGeometry(QtCore.QRect(450, 230, 71, 16))
-		self.QminLabel.setObjectName("QminLabel")
-		self.QmaxLabel = QtWidgets.QLabel(self.centralwidget)
-		self.QmaxLabel.setGeometry(QtCore.QRect(450, 270, 71, 16))
-		self.QmaxLabel.setObjectName("QmaxLabel")
-		
-
-		
-		self.qmaxinstLabel = QtWidgets.QLabel(self.centralwidget)
-		self.qmaxinstLabel.setGeometry(QtCore.QRect(450, 310, 81, 16))
-		self.qmaxinstLabel.setObjectName("qmaxinstLabel")
-		
 
 
 		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
@@ -237,6 +317,7 @@ class Ui_MainWindow(object):
 		self.fileButton = QtWidgets.QPushButton(self.centralwidget)
 		self.fileButton.setGeometry(QtCore.QRect(250, 10, 41, 28))
 		self.fileButton.setObjectName("fileButton")
+
 		self.rminBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.rminBox.setGeometry(QtCore.QRect(120, 290, 62, 22))
 		self.rminBox.setMinimum(0.01)
@@ -244,12 +325,16 @@ class Ui_MainWindow(object):
 		self.rminBox.setSingleStep(0.1)
 		self.rminBox.setProperty("value", 0.5)
 		self.rminBox.setObjectName("rminBox")
+		self.rminBox.setKeyboardTracking(False)
+
 		self.rmaxBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.rmaxBox.setGeometry(QtCore.QRect(120, 330, 62, 22))
 		self.rmaxBox.setMinimum(3.0)
 		self.rmaxBox.setMaximum(10000.0)
 		self.rmaxBox.setProperty("value", 30.0)
 		self.rmaxBox.setObjectName("rmaxBox")
+		self.rmaxBox.setKeyboardTracking(False)
+
 		self.rstepBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.rstepBox.setGeometry(QtCore.QRect(120, 370, 62, 22))
 		self.rstepBox.setDecimals(3)
@@ -258,6 +343,8 @@ class Ui_MainWindow(object):
 		self.rstepBox.setSingleStep(0.01)
 		self.rstepBox.setProperty("value", 0.01)
 		self.rstepBox.setObjectName("rstepBox")
+		self.rstepBox.setKeyboardTracking(False)
+
 		self.rminLabel = QtWidgets.QLabel(self.centralwidget)
 		self.rminLabel.setGeometry(QtCore.QRect(200, 290, 55, 16))
 		self.rminLabel.setObjectName("rminLabel")
@@ -373,6 +460,22 @@ class Ui_MainWindow(object):
 		self.QButton.clicked.connect(self.updateConfigFile)
 		self.twothetaButton.clicked.connect(self.updateConfigFile)
 
+		self.bkgscalerelButton.clicked.connect(lambda: self.changeRel(self.bkgscalebox))
+		self.bkgscalerel.setKeyboardTracking(False)
+		self.bkgscalerel.valueChanged.connect(lambda: self.changeStep(self.bkgscalebox))
+		self.qminrelButton.clicked.connect(lambda: self.changeRel(self.qminbox))
+		self.qminrel.setKeyboardTracking(False)
+		self.qminrel.valueChanged.connect(lambda: self.changeStep(self.qminbox))
+		self.qmaxrelButton.clicked.connect(lambda: self.changeRel(self.qmaxbox))
+		self.qmaxrel.setKeyboardTracking(False)
+		self.qmaxrel.valueChanged.connect(lambda: self.changeStep(self.qmaxbox))
+		self.qmaxinstrelButton.clicked.connect(lambda: self.changeRel(self.qmaxinstbox))
+		self.qmaxinstrel.setKeyboardTracking(False)
+		self.qmaxinstrel.valueChanged.connect(lambda: self.changeStep(self.qmaxinstbox))
+		self.rpolyrelButton.clicked.connect(lambda: self.changeRel(self.rpolybox))
+		self.rpolyrel.setKeyboardTracking(False)
+		self.rpolyrel.valueChanged.connect(lambda: self.changeStep(self.rpolybox))
+
 		
 	def retranslateUi(self, MainWindow):
 		_translate = QtCore.QCoreApplication.translate
@@ -381,7 +484,8 @@ class Ui_MainWindow(object):
 		#self.pdfgetxFormat.setText(_translate("MainWindow", "pdfgetx format"))
 		self.fileLabel.setText(_translate("MainWindow", "file"))
 		self.bkgFileLabel.setText(_translate("MainWindow", "background\nfile"))
-		self.bkgscaleLabel.setText(_translate("MainWindow", "background scale"))
+		self.bkgscaleLabel.setText(_translate("MainWindow", "background\nscale"))
+		self.bkgscaleLabel.adjustSize()
 		self.rpolyLabel.setText(_translate("MainWindow", "rpoly"))
 		self.QminLabel.setText(_translate("MainWindow", "Qmin"))
 		self.QmaxLabel.setText(_translate("MainWindow", "Qmax"))
@@ -518,7 +622,21 @@ class Ui_MainWindow(object):
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 		self.qmaxbox.setMinimum(self.qminbox.value()+1)
 		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
-
+	
+	def changeRel(self,parameter):
+		relParamDct = {self.bkgscalebox:self.bkgscalerel,
+					   self.qminbox:self.qminrel,
+					   self.qmaxbox:self.qmaxrel,
+					   self.qmaxinstbox:self.qmaxinstrel,
+					   self.rpolybox:self.rpolyrel}
+		parameter.setValue(parameter.value()+relParamDct[parameter].value())
+	def changeStep(self,parameter):
+		relParamDct = {self.bkgscalebox:self.bkgscalerel,
+					   self.qminbox:self.qminrel,
+					   self.qmaxbox:self.qmaxrel,
+					   self.qmaxinstbox:self.qmaxinstrel,
+					   self.rpolybox:self.rpolyrel}
+		parameter.setSingleStep(relParamDct[parameter].value())
 	def startWorker(self):
 		self.plotted = False
 		if self.running:
@@ -585,9 +703,11 @@ class Ui_MainWindow(object):
 				if plotDct[item][-1]:
 					x = plotDct[item][0]
 					y = plotDct[item][1]
-					self.ax.plot(x,y)
+					self.ax.plot(x,y,label = 'measured')
 					if item == 'I(Q)':
-						self.ax.plot(x,self.bkg)
+						self.ax.plot(x,self.bkg, label = 'background')
+						self.ax.plot(x,y-self.bkg,label = 'difference')
+						self.ax.legend()
 					self.ax.set_xlabel(plotDct[item][2])
 					self.ax.set_xlim(x[0],x[-1])
 					self.ax.set_ylabel(item)
@@ -603,6 +723,7 @@ class Ui_MainWindow(object):
 
 						self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering')
 						self.ax[plotno].plot(self.qi,self.bkg,label = 'background')
+						self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference')
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('Intensity')
 						self.ax[plotno].legend()
