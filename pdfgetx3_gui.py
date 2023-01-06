@@ -416,7 +416,7 @@ class Ui_MainWindow(object):
 			self.filelistBox.setItemText(self.filelistBox.count()-1,os.path.basename(self.filename.text()))
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
 
-		#self.plotButton.clicked.connect(self.run)
+		self.plotButton.clicked.connect(self.updateConfigFile)
 		self.plotButton.clicked.connect(self.startWorker)
 		#self.updatePlotButton.clicked.connect(self.plotUpdate)
 
@@ -426,6 +426,7 @@ class Ui_MainWindow(object):
 		self.bkgfileListFile = 'pdfBkgFileList.dat'
 		if os.path.exists(self.configFile):
 			self.readConfigFile()
+			
 		if os.path.exists(self.fileListFile):
 			self.readFileconfig()
 		self.filelistBox.currentTextChanged.connect(self.changeFile)
@@ -539,7 +540,12 @@ class Ui_MainWindow(object):
 					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
 					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
 					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
-					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()] }
+					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()],
+					self.bkgscalerel.objectName(): [self.bkgscalerel,self.bkgscalerel.value()],
+					self.qminrel.objectName(): [self.qminrel,self.qminrel.value()],
+					self.qmaxrel.objectName(): [self.qmaxrel,self.qmaxrel.value()],
+					self.qmaxinstrel.objectName(): [self.qmaxinstrel, self.qmaxinstrel.value()],
+					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()]}
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
 		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
@@ -836,6 +842,12 @@ class Ui_MainWindow(object):
 					self.paramDct[widgetname][0].setItemText(self.filelistBox.count()-1,widgetname)
 					self.paramDct[widgetname][0].setCurrentIndex(self.filelistBox.count()-1)
 			'''
+		self.setQmax_lims()
+		self.bkgscalebox.setSingleStep(self.bkgscalerel.value())
+		self.qminbox.setSingleStep(self.qminrel.value())
+		self.qmaxbox.setSingleStep(self.qmaxrel.value())
+		self.qmaxinstbox.setSingleStep(self.qmaxinstrel.value())
+		self.rpolybox.setSingleStep(self.rpolyrel.value())
 	def readFileconfig(self):
 		f = open(self.fileListFile,'r')
 		lines = f.readlines()
