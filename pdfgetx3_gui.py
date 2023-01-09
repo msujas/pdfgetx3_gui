@@ -84,6 +84,8 @@ class Ui_MainWindow(object):
 		self.compositionBox = QtWidgets.QLineEdit(self.centralwidget)
 		self.compositionBox.setGeometry(QtCore.QRect(20, 80, 141, 22))
 		self.compositionBox.setObjectName("compositionBox")
+
+
 		self.compositionLabel = QtWidgets.QLabel(self.centralwidget)
 		self.compositionLabel.setGeometry(QtCore.QRect(170, 80, 81, 16))
 		self.compositionLabel.setObjectName("compositionLabel")
@@ -92,7 +94,7 @@ class Ui_MainWindow(object):
 		self.wavelengthBox.setGeometry(QtCore.QRect(20, 110, 141, 22))
 		self.wavelengthBox.setObjectName("wavelengthBox")
 		self.wavelengthLabel = QtWidgets.QLabel(self.centralwidget)
-		self.wavelengthLabel.setGeometry(QtCore.QRect(180, 110, 81, 16))
+		self.wavelengthLabel.setGeometry(QtCore.QRect(170, 110, 81, 16))
 		self.wavelengthLabel.setObjectName("wavelengthLabel")
 
 		self.filelistBox = QtWidgets.QComboBox(self.centralwidget)
@@ -135,21 +137,11 @@ class Ui_MainWindow(object):
 
 		self.outputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
 		
-		#self.gudrunFormat = QtWidgets.QRadioButton(self.centralwidget)
-		#self.gudrunFormat.setGeometry(QtCore.QRect(480, 80, 121, 20))
-		#self.gudrunFormat.setObjectName("gudrunFormat")
-		#self.pdfgetxFormat = QtWidgets.QRadioButton(self.centralwidget)
-		#self.pdfgetxFormat.setGeometry(QtCore.QRect(350, 80, 121, 20))
-		#self.pdfgetxFormat.setChecked(True)
-		#self.pdfgetxFormat.setObjectName("pdfgetxFormat")
-		#
-		#self.outputFormatGroup.addButton(self.gudrunFormat)
-		#self.outputFormatGroup.addButton(self.pdfgetxFormat)
 		
 		self.relLabel = QtWidgets.QLabel(self.centralwidget)
 		self.relLabel.setGeometry(QtCore.QRect(520, 170, 121, 16))
 		self.relLabel.setObjectName("relLabel")
-		self.relLabel.setText('relative')
+		self.relLabel.setText('step size')
 		
 		self.bkgscalebox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.bkgscalebox.setGeometry(QtCore.QRect(450, 190, 61, 22))
@@ -167,11 +159,6 @@ class Ui_MainWindow(object):
 		self.bkgscalerel.setSingleStep(0.01)
 		self.bkgscalerel.setMinimum(-1)
 		self.bkgscalerel.setMaximum(1)
-
-		self.bkgscalerelButton = QtWidgets.QPushButton(self.centralwidget)
-		self.bkgscalerelButton.setGeometry(QtCore.QRect(590, 190, 61, 22))
-		self.bkgscalerelButton.setText('move rel.')
-		self.bkgscalerelButton.setObjectName('bkgscalerelButton')
 
 		self.bkgscaleLabel = QtWidgets.QLabel(self.centralwidget)
 		self.bkgscaleLabel.setGeometry(QtCore.QRect(371, 190, 121, 16))
@@ -194,11 +181,6 @@ class Ui_MainWindow(object):
 		self.qminrel.setMinimum(-1)
 		self.qminrel.setMaximum(1)
 
-		self.qminrelButton = QtWidgets.QPushButton(self.centralwidget)
-		self.qminrelButton.setGeometry(QtCore.QRect(590, 230, 61, 22))
-		self.qminrelButton.setText('move rel.')
-		self.qminrelButton.setObjectName("qminrelButton")
-
 		self.QminLabel = QtWidgets.QLabel(self.centralwidget)
 		self.QminLabel.setGeometry(QtCore.QRect(371, 230, 71, 16))
 		self.QminLabel.setObjectName("QminLabel")
@@ -207,7 +189,7 @@ class Ui_MainWindow(object):
 		self.qmaxbox.setGeometry(QtCore.QRect(450, 270, 61, 22))
 		self.qmaxbox.setProperty("value", 23)
 		self.qmaxbox.setObjectName("qmaxbox")
-		self.qmaxbox.setDecimals(1)
+		self.qmaxbox.setDecimals(2)
 		self.qmaxbox.setSingleStep(0.1)
 		self.qmaxbox.setMinimum(self.qminbox.value()+1)
 		self.qmaxbox.setKeyboardTracking(False)
@@ -216,15 +198,11 @@ class Ui_MainWindow(object):
 		self.qmaxrel.setGeometry(QtCore.QRect(520, 270, 61, 22))
 		self.qmaxrel.setProperty("value", 0.1)
 		self.qmaxrel.setObjectName("qmaxrel")
-		self.qmaxrel.setDecimals(1)
+		self.qmaxrel.setDecimals(2)
 		self.qmaxrel.setSingleStep(0.1)
 		self.qmaxrel.setMinimum(-1)
 		self.qmaxrel.setMaximum(1)
 
-		self.qmaxrelButton = QtWidgets.QPushButton(self.centralwidget)
-		self.qmaxrelButton.setGeometry(QtCore.QRect(590, 270, 61, 22))
-		self.qmaxrelButton.setText('move rel.')
-		self.qmaxrelButton.setObjectName('qmaxrelButton')
 
 		self.QmaxLabel = QtWidgets.QLabel(self.centralwidget)
 		self.QmaxLabel.setGeometry(QtCore.QRect(371, 270, 71, 16))
@@ -234,7 +212,7 @@ class Ui_MainWindow(object):
 		self.qmaxinstbox.setGeometry(QtCore.QRect(450, 310, 61, 21))
 		self.qmaxinstbox.setProperty("value", 23)
 		self.qmaxinstbox.setObjectName("qmaxinstbox")
-		self.qmaxinstbox.setDecimals(1)
+		self.qmaxinstbox.setDecimals(2)
 		self.qmaxinstbox.setSingleStep(0.1)
 		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
 		self.qmaxinstbox.setKeyboardTracking(False)
@@ -243,15 +221,10 @@ class Ui_MainWindow(object):
 		self.qmaxinstrel.setGeometry(QtCore.QRect(520, 310, 61, 21))
 		self.qmaxinstrel.setProperty("value", 0.1)
 		self.qmaxinstrel.setObjectName("qmaxinstrel")
-		self.qmaxinstrel.setDecimals(1)
+		self.qmaxinstrel.setDecimals(2)
 		self.qmaxinstrel.setSingleStep(0.1)
 		self.qmaxinstrel.setMaximum(1)
 		self.qmaxinstrel.setMinimum(-1)
-
-		self.qmaxinstrelButton = QtWidgets.QPushButton(self.centralwidget)
-		self.qmaxinstrelButton.setGeometry(QtCore.QRect(590, 310, 61, 22))
-		self.qmaxinstrelButton.setText('move rel.')
-		self.qmaxinstrelButton.setObjectName('qmaxinstrelButton')
 
 		self.qmaxinstLabel = QtWidgets.QLabel(self.centralwidget)
 		self.qmaxinstLabel.setGeometry(QtCore.QRect(371, 310, 81, 16))
@@ -276,25 +249,20 @@ class Ui_MainWindow(object):
 		self.rpolyrel.setMaximum(1)
 		self.rpolyrel.setMinimum(-1)
 
-		self.rpolyrelButton = QtWidgets.QPushButton(self.centralwidget)
-		self.rpolyrelButton.setGeometry(QtCore.QRect(590, 350, 61, 22))
-		self.rpolyrelButton.setText('move rel.')
-		self.rpolyrelButton.setObjectName('rpolyrelButton')
-
 		self.rpolyLabel = QtWidgets.QLabel(self.centralwidget)
 		self.rpolyLabel.setGeometry(QtCore.QRect(371, 350, 81, 16))
 		self.rpolyLabel.setObjectName("rpolyLabel")
 		
 		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileLabel.setGeometry(QtCore.QRect(300, 10, 55, 16))
+		self.fileLabel.setGeometry(QtCore.QRect(280, 10, 55, 16))
 		self.fileLabel.setObjectName("fileLabel")
 		self.bkgFileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgFileLabel.setGeometry(QtCore.QRect(300, 40, 101, 31))
+		self.bkgFileLabel.setGeometry(QtCore.QRect(280, 40, 101, 31))
 		self.bkgFileLabel.setObjectName("bkgFileLabel")
 
 
 		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
-		self.bkgfilebutton.setGeometry(QtCore.QRect(250, 40, 41, 28))
+		self.bkgfilebutton.setGeometry(QtCore.QRect(250, 40, 20, 20))
 		self.bkgfilebutton.setObjectName("bkgfilebutton")
 		self.iqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
 		self.iqCheckBox.setGeometry(QtCore.QRect(330, 130, 81, 20))
@@ -315,7 +283,7 @@ class Ui_MainWindow(object):
 		self.grCheckBox.setGeometry(QtCore.QRect(590, 130, 81, 20))
 		self.grCheckBox.setObjectName("grCheckBox")
 		self.fileButton = QtWidgets.QPushButton(self.centralwidget)
-		self.fileButton.setGeometry(QtCore.QRect(250, 10, 41, 28))
+		self.fileButton.setGeometry(QtCore.QRect(250, 10, 20, 20))
 		self.fileButton.setObjectName("fileButton")
 
 		self.rminBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
@@ -461,19 +429,15 @@ class Ui_MainWindow(object):
 		self.QButton.clicked.connect(self.updateConfigFile)
 		self.twothetaButton.clicked.connect(self.updateConfigFile)
 
-		self.bkgscalerelButton.clicked.connect(lambda: self.changeRel(self.bkgscalebox))
+
 		self.bkgscalerel.setKeyboardTracking(False)
 		self.bkgscalerel.valueChanged.connect(lambda: self.changeStep(self.bkgscalebox))
-		self.qminrelButton.clicked.connect(lambda: self.changeRel(self.qminbox))
 		self.qminrel.setKeyboardTracking(False)
 		self.qminrel.valueChanged.connect(lambda: self.changeStep(self.qminbox))
-		self.qmaxrelButton.clicked.connect(lambda: self.changeRel(self.qmaxbox))
 		self.qmaxrel.setKeyboardTracking(False)
 		self.qmaxrel.valueChanged.connect(lambda: self.changeStep(self.qmaxbox))
-		self.qmaxinstrelButton.clicked.connect(lambda: self.changeRel(self.qmaxinstbox))
 		self.qmaxinstrel.setKeyboardTracking(False)
 		self.qmaxinstrel.valueChanged.connect(lambda: self.changeStep(self.qmaxinstbox))
-		self.rpolyrelButton.clicked.connect(lambda: self.changeRel(self.rpolybox))
 		self.rpolyrel.setKeyboardTracking(False)
 		self.rpolyrel.valueChanged.connect(lambda: self.changeStep(self.rpolybox))
 
@@ -498,7 +462,7 @@ class Ui_MainWindow(object):
 		self.compositionBox.setText(_translate("MainWindow", "LaB6"))
 		self.wavelengthBox.setText(_translate("MainWindow", "0.270793"))
 		self.compositionLabel.setText(_translate("MainWindow", "composition"))
-		self.bkgfilebutton.setText(_translate("MainWindow", "file"))
+		self.bkgfilebutton.setText(_translate("MainWindow", "..."))
 		self.removeButton.setText(_translate("MainWindow", "remove from list"))
 		self.iqCheckBox.setText(_translate("MainWindow", "I(Q)"))
 		self.sqCheckBox.setText(_translate("MainWindow", "S(Q)"))
@@ -506,7 +470,7 @@ class Ui_MainWindow(object):
 		self.saveButton.setText(_translate("MainWindow", "Save"))
 		self.plotLabel.setText(_translate("MainWindow", "Plot"))
 		self.grCheckBox.setText(_translate("MainWindow", "G(r)"))
-		self.fileButton.setText(_translate("MainWindow", "file"))
+		self.fileButton.setText(_translate("MainWindow", "..."))
 		self.fileButton.setShortcut(_translate("MainWindow", "Ctrl+O"))
 		self.QButton.setText(_translate("MainWindow", "Q"))
 		self.twothetaButton.setText(_translate("MainWindow", "2theta"))
@@ -520,6 +484,7 @@ class Ui_MainWindow(object):
 		self.rminLabel.setText(_translate("MainWindow", "rmin (Å)"))
 		self.rmaxLablel.setText(_translate("MainWindow", "rmax (Å)"))
 		self.rstepLabel.setText(_translate("MainWindow", "rstep (Å)"))
+
 	def updateParamDct(self):
 		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
 					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
@@ -628,14 +593,7 @@ class Ui_MainWindow(object):
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 		self.qmaxbox.setMinimum(self.qminbox.value()+1)
 		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
-	
-	def changeRel(self,parameter):
-		relParamDct = {self.bkgscalebox:self.bkgscalerel,
-					   self.qminbox:self.qminrel,
-					   self.qmaxbox:self.qmaxrel,
-					   self.qmaxinstbox:self.qmaxinstrel,
-					   self.rpolybox:self.rpolyrel}
-		parameter.setValue(parameter.value()+relParamDct[parameter].value())
+
 	def changeStep(self,parameter):
 		relParamDct = {self.bkgscalebox:self.bkgscalerel,
 					   self.qminbox:self.qminrel,
@@ -648,8 +606,9 @@ class Ui_MainWindow(object):
 		if self.running:
 			plt.close()
 			self.thread.stop()
-		self.running = True
+		
 		inputfile=self.filename.text()
+		x = np.loadtxt(inputfile,comments = '#', unpack = True, usecols=0)
 		bkgfile=self.bkgfilename.text()
 		bkgscale=self.bkgscalebox.value()
 		composition = self.compositionBox.text()
@@ -664,8 +623,10 @@ class Ui_MainWindow(object):
 
 		if self.QButton.isChecked():
 			dataformat = 'QA'
+			self.qmaxinstbox.setMaximum(x[-1])
 		elif self.twothetaButton.isChecked():
 			dataformat = 'twotheta'
+			self.qmaxinstbox.setMaximum(4*np.pi*np.sin(x[-1]*np.pi/(2*180))/wavelength)
 
 		self.iqcheck = self.iqCheckBox.isChecked()
 		self.sqcheck = self.sqCheckBox.isChecked()
@@ -688,7 +649,7 @@ class Ui_MainWindow(object):
 			self.dataformat = 'QA'
 		elif self.twothetaButton.isChecked():
 			self.dataformat = 'twotheta'
-
+		self.running = True
 		self.thread = Worker(file = inputfile, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
 		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength)
 		
@@ -703,16 +664,17 @@ class Ui_MainWindow(object):
 					'F(Q)': [self.q,self.fq,'Q (Å$^{-1}$)',self.plotlist[2]],
 					'G(r)': [self.r,self.gr,'r (Å)',self.plotlist[3]]}
 
+		linethickness = 1
 		if self.noplots == 1:
 			self.ax.cla()
 			for item in plotDct:
 				if plotDct[item][-1]:
 					x = plotDct[item][0]
 					y = plotDct[item][1]
-					self.ax.plot(x,y,label = 'measured')
+					self.ax.plot(x,y,label = 'measured',linewidth = linethickness)
 					if item == 'I(Q)':
-						self.ax.plot(x,self.bkg, label = 'background')
-						self.ax.plot(x,y-self.bkg,label = 'difference')
+						self.ax.plot(x,self.bkg, label = 'background',linewidth = linethickness)
+						self.ax.plot(x,y-self.bkg,label = 'difference',linewidth = linethickness)
 						self.ax.legend()
 					self.ax.set_xlabel(plotDct[item][2])
 					self.ax.set_xlim(x[0],x[-1])
@@ -727,26 +689,26 @@ class Ui_MainWindow(object):
 				if plot:
 					if c == 0:
 
-						self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering')
-						self.ax[plotno].plot(self.qi,self.bkg,label = 'background')
-						self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference')
+						self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering',linewidth = linethickness)
+						self.ax[plotno].plot(self.qi,self.bkg,label = 'background',linewidth = linethickness)
+						self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference',linewidth = linethickness)
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('Intensity')
 						self.ax[plotno].legend()
 						self.ax[plotno].set_xlim(self.qi[0],self.qi[-1])
 
 					elif c == 1:
-						self.ax[plotno].plot(self.q,self.sq)
+						self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('S(Q)')
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 					elif c == 2:
-						self.ax[plotno].plot(self.q,self.fq)
+						self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness)
 						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 						self.ax[plotno].set_ylabel('F(Q)')
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 					elif c == 3:
-						self.ax[plotno].plot(self.r,self.gr)
+						self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
 						self.ax[plotno].set_xlabel('r (Å)')
 						self.ax[plotno].set_ylabel('G(r)')
 						self.ax[plotno].set_xlim(self.r[0],self.r[-1])				
@@ -757,6 +719,8 @@ class Ui_MainWindow(object):
 		plt.pause(0.01)
 		self.centralwidget.activateWindow()
 
+	def stop_worker(self):
+		self.thread.stop()
 
 	def write_iq_file(self):
 		if self.iqcheck:
