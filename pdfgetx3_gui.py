@@ -27,6 +27,8 @@ def text_to_bool(text: str) -> bool:
 	elif 'False' in text:
 		return False
 
+
+
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
 
@@ -404,7 +406,7 @@ class Ui_MainWindow(object):
 		self.rminBox.valueChanged.connect(self.updateRmin)
 		self.rmaxBox.valueChanged.connect(self.updateRmax)
 		self.rstepBox.valueChanged.connect(self.updateRstep)
-		self.compositionBox.textChanged.connect(self.updateComposition)
+		#self.compositionBox.textChanged.connect(self.updateComposition)
 		self.qminbox.valueChanged.connect(self.updateQmin)
 		self.qminbox.valueChanged.connect(self.setQmax_lims)
 		self.qmaxbox.valueChanged.connect(self.updateQmax)
@@ -652,7 +654,7 @@ class Ui_MainWindow(object):
 		self.running = True
 		self.thread = Worker(file = inputfile, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
 		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength)
-		
+		plt.ion()
 		self.thread.start()
 		self.thread.outputs.connect(self.plotUpdate)
 
@@ -717,6 +719,7 @@ class Ui_MainWindow(object):
             hspace = 0.2, wspace = 0)
 		plt.show()
 		plt.pause(0.01)
+
 		self.centralwidget.activateWindow()
 
 	def stop_worker(self):
@@ -827,6 +830,10 @@ class Ui_MainWindow(object):
 			self.filelistBox.addItem('')
 			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+		currentFile = self.filename.text()
+		startIndex = self.fileList.index(currentFile)
+		self.filelistBox.setCurrentIndex(startIndex)
+
 		if not os.path.exists(self.bkgfileListFile):
 			return
 		f = open(self.bkgfileListFile,'r')
@@ -839,6 +846,9 @@ class Ui_MainWindow(object):
 			self.bkgfilelistBox.addItem('')
 			self.bkgfilelistBox.setItemText(self.bkgfilelistBox.count()-1,basefilename)
 			self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
+		currentbkgFile = self.bkgfilename.text()
+		startbkgIndex = self.bkgfileList.index(currentbkgFile)
+		self.bkgfilelistBox.setCurrentIndex(startbkgIndex)
 	def updateFileConfig(self):
 		string = ''
 		for item in self.fileList:
