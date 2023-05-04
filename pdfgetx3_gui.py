@@ -569,6 +569,7 @@ class Ui_MainWindow(object):
 			self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
 		self.updateBkgFileConfig()
 		self.updateConfigFile()
+
 	def bkgchangeFile(self):
 		if len(self.bkgfileList) <= 1:
 			print('can\'t remove last file')
@@ -577,6 +578,7 @@ class Ui_MainWindow(object):
 		newfile = self.bkgfileList[fileindex]
 		self.bkgfilename.setText(newfile)
 		self.updateBkgFileConfig()
+		self.updateConfigFile()
 
 	def saveFile(self):
 		
@@ -786,6 +788,7 @@ class Ui_MainWindow(object):
 		f = open(self.configFile,'w')
 		f.write(string)
 		f.close()
+		
 	def readConfigFile(self):
 		f = open(self.configFile,'r')
 		lines = f.readlines()
