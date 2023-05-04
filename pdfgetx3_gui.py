@@ -391,9 +391,11 @@ class Ui_MainWindow(object):
 		#self.updatePlotButton.clicked.connect(self.plotUpdate)
 
 		self.updateParamDct()
-		self.configFile = 'pdfConfigFile.dat'
-		self.fileListFile = 'pdfFileList.dat'
-		self.bkgfileListFile = 'pdfBkgFileList.dat'
+		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
+		print()
+		self.configFile = f'{self.configfilepath}/pdfConfigFile.dat'
+		self.fileListFile = f'{self.configfilepath}/pdfFileList.dat'
+		self.bkgfileListFile = f'{self.configfilepath}/pdfBkgFileList.dat'
 		if os.path.exists(self.configFile):
 			self.readConfigFile()
 			
@@ -788,7 +790,7 @@ class Ui_MainWindow(object):
 		f = open(self.configFile,'w')
 		f.write(string)
 		f.close()
-		
+
 	def readConfigFile(self):
 		f = open(self.configFile,'r')
 		lines = f.readlines()
