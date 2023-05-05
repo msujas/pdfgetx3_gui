@@ -28,7 +28,6 @@ def text_to_bool(text: str) -> bool:
 		return False
 
 
-
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
 
@@ -325,8 +324,9 @@ class Ui_MainWindow(object):
 		self.rstepLabel.setGeometry(QtCore.QRect(200, 370, 55, 16))
 		self.rstepLabel.setObjectName("rstepLabel")
 		
-
-		
+		self.errorMessageLabel = QtWidgets.QLabel(self.centralwidget)
+		self.errorMessageLabel.setGeometry(QtCore.QRect(20, 470, 55, 16))
+		self.errorMessageLabel.setObjectName('errorMessageLabel')
 
 		self.plotButton = QtWidgets.QPushButton(self.centralwidget)
 		self.plotButton.setGeometry(QtCore.QRect(310, 470, 93, 28))
@@ -489,124 +489,6 @@ class Ui_MainWindow(object):
 		self.rmaxLablel.setText(_translate("MainWindow", "rmax (Å)"))
 		self.rstepLabel.setText(_translate("MainWindow", "rstep (Å)"))
 
-	def updateParamDct(self):
-		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
-					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
-					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
-					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
-					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
-					i in range(self.filelistBox.count())])],
-					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
-					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
-					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
-					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
-					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
-					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
-					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
-					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
-					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
-					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
-					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
-					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
-					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
-					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()],
-					self.bkgscalerel.objectName(): [self.bkgscalerel,self.bkgscalerel.value()],
-					self.qminrel.objectName(): [self.qminrel,self.qminrel.value()],
-					self.qmaxrel.objectName(): [self.qmaxrel,self.qmaxrel.value()],
-					self.qmaxinstrel.objectName(): [self.qmaxinstrel, self.qmaxinstrel.value()],
-					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()]}
-	def open_file(self):
-		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
-		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
-		directory=os.path.dirname(self.filename.text()))
-
-		basefilename = os.path.basename(dialog[0])
-		
-		if dialog[0] != '':
-			self.filename.setText(dialog[0])
-			self.fileList.append(dialog[0])
-			self.filelistBox.addItem('')
-			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
-			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
-		self.updateFileConfig()
-		self.updateConfigFile()
-
-	def changeFile(self):
-		fileindex = self.filelistBox.currentIndex()
-		newfile = self.fileList[fileindex]
-		self.filename.setText(newfile)
-		self.updateConfigFile()
-	def removeFile(self):
-		if len(self.fileList) > 1:
-			fileindex = self.filelistBox.currentIndex()
-			self.filelistBox.removeItem(fileindex)
-			self.fileList.pop(fileindex)
-			self.changeFile()
-			self.updateFileConfig()
-			self.updateConfigFile()
-		else:
-			print('can\'t remove last file')
-	def removeBkgFile(self):
-		if len(self.bkgfileList) > 1:
-			fileindex = self.bkgfilelistBox.currentIndex()
-			self.bkgfilelistBox.removeItem(fileindex)
-			self.bkgfileList.pop(fileindex)
-			self.bkgchangeFile()
-			self.updateBkgFileConfig()
-			self.updateConfigFile()
-		else:
-			print('can\'t remove last file')
-		
-	def open_bkgfile(self):
-		#dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
-		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select background file',	filter = filter,
-		directory=os.path.dirname(self.bkgfilename.text()))
-		if dialog[0] != '':
-			self.bkgfileList.append(dialog[0])
-			basefilename = os.path.basename(dialog[0])
-			self.bkgfilename.setText(dialog[0])
-			self.bkgfilelistBox.addItem('')
-			self.bkgfilelistBox.setItemText(self.bkgfilelistBox.count()-1,basefilename)
-			self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
-		self.updateBkgFileConfig()
-		self.updateConfigFile()
-
-	def bkgchangeFile(self):
-		if len(self.bkgfileList) <= 1:
-			print('can\'t remove last file')
-			return
-		fileindex = self.bkgfilelistBox.currentIndex()
-		newfile = self.bkgfileList[fileindex]
-		self.bkgfilename.setText(newfile)
-		self.updateBkgFileConfig()
-		self.updateConfigFile()
-
-	def saveFile(self):
-		
-		pdffunctions.writeOutput(file=self.filename.text(),bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
-		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
-		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(),
-		rstep = self.rstepBox.value(),wavelength = float(self.wavelengthBox.text()),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
-		fqcheck = self.fqcheck, grcheck = self.grcheck)
-		
-		
-		if len(self.plotlist[self.plotlist == True])==0:
-			print('no outputs selected to plot')
-			return
-	
-	def setQmax_lims(self):
-		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
-		self.qmaxbox.setMinimum(self.qminbox.value()+1)
-		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
-
-	def changeStep(self,parameter):
-		relParamDct = {self.bkgscalebox:self.bkgscalerel,
-					   self.qminbox:self.qminrel,
-					   self.qmaxbox:self.qmaxrel,
-					   self.qmaxinstbox:self.qmaxinstrel,
-					   self.rpolybox:self.rpolyrel}
-		parameter.setSingleStep(relParamDct[parameter].value())
 	def startWorker(self):
 		self.plotted = False
 		if self.running:
@@ -644,10 +526,12 @@ class Ui_MainWindow(object):
 
 		
 		if len(self.plotlist[self.plotlist == True])==0:
-			print('no outputs selected to plot')
+			message = 'no outputs selected to plot'
+			print(message)
+			self.errorMessage(message)
 			self.running = False
 			return
-		
+		self.errorMessage('')
 
 		self.fig,self.ax = plt.subplots(self.noplots,1,dpi = 150)
 
@@ -719,12 +603,139 @@ class Ui_MainWindow(object):
 						self.ax[plotno].set_ylabel('G(r)')
 						self.ax[plotno].set_xlim(self.r[0],self.r[-1])				
 					plotno += 1
+		
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
 		plt.show()
 		plt.pause(0.01)
 
 		self.centralwidget.activateWindow()
+
+	def updateParamDct(self):
+		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
+					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
+					self.compositionBox.objectName(): [self.compositionBox, self.compositionBox.text()],
+					self.wavelengthBox.objectName(): [self.wavelengthBox,self.wavelengthBox.text()],
+					self.filelistBox.objectName(): [self.filelistBox,','.join([self.filelistBox.itemText(i) for 
+					i in range(self.filelistBox.count())])],
+					self.bkgfilelistBox.objectName(): [self.bkgfilelistBox,','.join([self.bkgfilelistBox.itemText(i) for 
+					i in range(self.bkgfilelistBox.count())])],
+					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
+					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
+					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
+					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
+					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
+					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
+					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
+					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
+					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
+					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
+					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
+					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
+					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
+					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()],
+					self.bkgscalerel.objectName(): [self.bkgscalerel,self.bkgscalerel.value()],
+					self.qminrel.objectName(): [self.qminrel,self.qminrel.value()],
+					self.qmaxrel.objectName(): [self.qmaxrel,self.qmaxrel.value()],
+					self.qmaxinstrel.objectName(): [self.qmaxinstrel, self.qmaxinstrel.value()],
+					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()]}
+	def open_file(self):
+		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
+		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
+		directory=os.path.dirname(self.filename.text()))
+
+		basefilename = os.path.basename(dialog[0])
+		
+		if dialog[0] != '':
+			self.filename.setText(dialog[0])
+			self.fileList.append(dialog[0])
+			self.filelistBox.addItem('')
+			self.filelistBox.setItemText(self.filelistBox.count()-1,basefilename)
+			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+		self.updateFileConfig()
+		self.updateConfigFile()
+
+	def changeFile(self):
+		fileindex = self.filelistBox.currentIndex()
+		newfile = self.fileList[fileindex]
+		self.filename.setText(newfile)
+		self.updateConfigFile()
+
+	def removeFile(self):
+		if len(self.fileList) > 1:
+			fileindex = self.filelistBox.currentIndex()
+			self.filelistBox.removeItem(fileindex)
+			self.fileList.pop(fileindex)
+			self.changeFile()
+			self.updateFileConfig()
+			self.updateConfigFile()
+			self.errorMessage('')
+		else:
+			message = 'can\'t remove last file'
+			print(message)
+			self.errorMessage(message)
+
+	def removeBkgFile(self):
+		if len(self.bkgfileList) > 1:
+			fileindex = self.bkgfilelistBox.currentIndex()
+			self.bkgfilelistBox.removeItem(fileindex)
+			self.bkgfileList.pop(fileindex)
+			self.bkgchangeFile()
+			self.updateBkgFileConfig()
+			self.updateConfigFile()
+			self.errorMessage('')
+		else:
+			print('can\'t remove last file')
+			message = 'can\'t remove last file'
+			print(message)
+			self.errorMessage(message)
+	def open_bkgfile(self):
+		#dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
+		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select background file',	filter = filter,
+		directory=os.path.dirname(self.bkgfilename.text()))
+		if dialog[0] != '':
+			self.bkgfileList.append(dialog[0])
+			basefilename = os.path.basename(dialog[0])
+			self.bkgfilename.setText(dialog[0])
+			self.bkgfilelistBox.addItem('')
+			self.bkgfilelistBox.setItemText(self.bkgfilelistBox.count()-1,basefilename)
+			self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
+		self.updateBkgFileConfig()
+		self.updateConfigFile()
+
+	def bkgchangeFile(self):
+		fileindex = self.bkgfilelistBox.currentIndex()
+		newfile = self.bkgfileList[fileindex]
+		self.bkgfilename.setText(newfile)
+		self.updateBkgFileConfig()
+		self.updateConfigFile()
+
+	def saveFile(self):
+		
+		pdffunctions.writeOutput(file=self.filename.text(),bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
+		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
+		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(),
+		rstep = self.rstepBox.value(),wavelength = float(self.wavelengthBox.text()),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
+		fqcheck = self.fqcheck, grcheck = self.grcheck)
+		
+		
+		if len(self.plotlist[self.plotlist == True])==0:
+			print('no outputs selected to plot')
+			return
+	
+	def setQmax_lims(self):
+		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
+		self.qmaxbox.setMinimum(self.qminbox.value()+1)
+		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
+
+	def changeStep(self,parameter):
+		relParamDct = {self.bkgscalebox:self.bkgscalerel,
+					   self.qminbox:self.qminrel,
+					   self.qmaxbox:self.qmaxrel,
+					   self.qmaxinstbox:self.qmaxinstrel,
+					   self.rpolybox:self.rpolyrel}
+		parameter.setSingleStep(relParamDct[parameter].value())
 
 	def stop_worker(self):
 		self.thread.stop()
@@ -869,6 +880,9 @@ class Ui_MainWindow(object):
 		f.write(string)
 		f.close()
 
+	def errorMessage(self,message):
+		self.errorMessageLabel.setText(message)
+		self.errorMessageLabel.adjustSize()
 
 if __name__ == "__main__":
 	import sys
