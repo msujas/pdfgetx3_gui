@@ -204,6 +204,11 @@ class Ui_MainWindow(object):
 		self.qmaxrel.setMinimum(-1)
 		self.qmaxrel.setMaximum(1)
 
+		self.qmaxtogether = QtWidgets.QCheckBox(self.centralwidget)
+		self.qmaxtogether.setGeometry(590, 270, 80, 20)
+		self.qmaxtogether.setObjectName('qmaxtogether')
+		self.qmaxtogether.setText('Qmax together?')
+		self.qmaxtogether.adjustSize()
 
 		self.QmaxLabel = QtWidgets.QLabel(self.centralwidget)
 		self.QmaxLabel.setGeometry(QtCore.QRect(371, 270, 71, 16))
@@ -412,9 +417,10 @@ class Ui_MainWindow(object):
 		self.qminbox.valueChanged.connect(self.updateQmin)
 		self.qminbox.valueChanged.connect(self.setQmax_lims)
 		self.qmaxbox.valueChanged.connect(self.updateQmax)
+		self.qmaxinstbox.valueChanged.connect(self.setQmax_lims)
 		self.qmaxinstbox.valueChanged.connect(self.updateQmaxinst)
 		self.rpolybox.valueChanged.connect(self.updateRpoly)
-		self.qmaxinstbox.valueChanged.connect(self.setQmax_lims)
+		
 
 		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
 		self.rminBox.valueChanged.connect(self.updateConfigFile)
@@ -432,6 +438,7 @@ class Ui_MainWindow(object):
 		self.grCheckBox.clicked.connect(self.updateConfigFile)
 		self.QButton.clicked.connect(self.updateConfigFile)
 		self.twothetaButton.clicked.connect(self.updateConfigFile)
+		self.qmaxtogether.clicked.connect(self.updateConfigFile)
 
 
 		self.bkgscalerel.setKeyboardTracking(False)
@@ -620,12 +627,12 @@ class Ui_MainWindow(object):
 					i in range(self.filelistBox.count())])],
 					self.bkgfilelistBox.objectName(): [self.bkgfilelistBox,','.join([self.bkgfilelistBox.itemText(i) for 
 					i in range(self.bkgfilelistBox.count())])],
-					self.QButton.objectName():  [self.QButton, bool_to_text(self.QButton.isChecked())],
-					self.twothetaButton.objectName(): [self.twothetaButton, bool_to_text(self.twothetaButton.isChecked())],
-					self.iqCheckBox.objectName(): [self.iqCheckBox,bool_to_text(self.iqCheckBox.isChecked())],
-					self.sqCheckBox.objectName(): [self.sqCheckBox,bool_to_text(self.sqCheckBox.isChecked())],
-					self.fqCheckBox.objectName(): [self.fqCheckBox, bool_to_text(self.fqCheckBox.isChecked())],
-					self.grCheckBox.objectName(): [self.grCheckBox, bool_to_text(self.grCheckBox.isChecked())],
+					self.QButton.objectName():  [self.QButton, str(self.QButton.isChecked())],
+					self.twothetaButton.objectName(): [self.twothetaButton, str(self.twothetaButton.isChecked())],
+					self.iqCheckBox.objectName(): [self.iqCheckBox,str(self.iqCheckBox.isChecked())],
+					self.sqCheckBox.objectName(): [self.sqCheckBox,str(self.sqCheckBox.isChecked())],
+					self.fqCheckBox.objectName(): [self.fqCheckBox, str(self.fqCheckBox.isChecked())],
+					self.grCheckBox.objectName(): [self.grCheckBox, str(self.grCheckBox.isChecked())],
 					self.rminBox.objectName(): [self.rminBox, self.rminBox.value()],
 					self.rmaxBox.objectName(): [self.rmaxBox,self.rmaxBox.value()],
 					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
@@ -638,7 +645,8 @@ class Ui_MainWindow(object):
 					self.qminrel.objectName(): [self.qminrel,self.qminrel.value()],
 					self.qmaxrel.objectName(): [self.qmaxrel,self.qmaxrel.value()],
 					self.qmaxinstrel.objectName(): [self.qmaxinstrel, self.qmaxinstrel.value()],
-					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()]}
+					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()],
+					self.qmaxtogether.objectName(): [self.qmaxtogether, str(self.qmaxtogether.isChecked())]}
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
 		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
@@ -760,10 +768,14 @@ class Ui_MainWindow(object):
 		if self.running:
 			self.thread.qmax = self.qmaxbox.value()
 			self.thread.repeat = True
+		if self.qmaxtogether.isChecked():
+			self.qmaxinstbox.setValue(self.qmaxbox.value())
 	def updateQmaxinst(self):
 		if self.running:
 			self.thread.qmaxinst = self.qmaxinstbox.value()
 			self.thread.repeat = True
+		if self.qmaxtogether.isChecked():
+			self.qmaxbox.setValue(self.qmaxinstbox.value())
 	def updateRmax(self):
 		if self.running:
 			self.thread.rmax = self.rmaxBox.value()
