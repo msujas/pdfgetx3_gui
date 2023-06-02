@@ -765,17 +765,19 @@ class Ui_MainWindow(object):
 			self.thread.qmin = self.qminbox.value()
 			self.thread.repeat = True
 	def updateQmax(self):
+		if self.qmaxtogether.isChecked():
+			self.qmaxinstbox.setValue(self.qmaxbox.value())
 		if self.running:
 			self.thread.qmax = self.qmaxbox.value()
 			self.thread.repeat = True
-		if self.qmaxtogether.isChecked():
-			self.qmaxinstbox.setValue(self.qmaxbox.value())
+
 	def updateQmaxinst(self):
+		if self.qmaxtogether.isChecked():
+			self.qmaxbox.setValue(self.qmaxinstbox.value())
 		if self.running:
 			self.thread.qmaxinst = self.qmaxinstbox.value()
 			self.thread.repeat = True
-		if self.qmaxtogether.isChecked():
-			self.qmaxbox.setValue(self.qmaxinstbox.value())
+
 	def updateRmax(self):
 		if self.running:
 			self.thread.rmax = self.rmaxBox.value()
