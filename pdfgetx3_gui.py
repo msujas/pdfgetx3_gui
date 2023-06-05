@@ -638,8 +638,8 @@ class Ui_MainWindow(object):
 					self.rstepBox.objectName(): [self.rstepBox,self.rstepBox.value()],
 					self.bkgscalebox.objectName(): [self.bkgscalebox, self.bkgscalebox.value()],
 					self.qminbox.objectName(): [self.qminbox,self.qminbox.value()],
-					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
 					self.qmaxinstbox.objectName(): [self.qmaxinstbox, self.qmaxinstbox.value()],
+					self.qmaxbox.objectName(): [self.qmaxbox, self.qmaxbox.value()],
 					self.rpolybox.objectName(): [self.rpolybox, self.rpolybox.value()],
 					self.bkgscalerel.objectName(): [self.bkgscalerel,self.bkgscalerel.value()],
 					self.qminrel.objectName(): [self.qminrel,self.qminrel.value()],
@@ -825,8 +825,11 @@ class Ui_MainWindow(object):
 			linesplit = line.split(': ')
 			widgetname = linesplit[0]
 			widgetvalue = linesplit[1]
+
 			if type(self.paramDct[widgetname][0]) == QtWidgets.QDoubleSpinBox:
 				self.paramDct[widgetname][0].setValue(float(widgetvalue))
+				if 'qmax' in widgetname:
+					self.setQmax_lims()
 			elif type(self.paramDct[widgetname][0]) == QtWidgets.QLineEdit:
 				self.paramDct[widgetname][0].setText(widgetvalue)
 			elif type(self.paramDct[widgetname][0]) == QtWidgets.QCheckBox or type(self.paramDct[widgetname][0]) == QtWidgets.QRadioButton:
@@ -845,6 +848,7 @@ class Ui_MainWindow(object):
 		self.qmaxbox.setSingleStep(self.qmaxrel.value())
 		self.qmaxinstbox.setSingleStep(self.qmaxinstrel.value())
 		self.rpolybox.setSingleStep(self.rpolyrel.value())
+
 	def readFileconfig(self):
 		f = open(self.fileListFile,'r')
 		lines = f.readlines()
