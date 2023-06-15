@@ -336,9 +336,13 @@ class Ui_MainWindow(object):
 		self.plotButton = QtWidgets.QPushButton(self.centralwidget)
 		self.plotButton.setGeometry(QtCore.QRect(310, 470, 93, 28))
 		self.plotButton.setObjectName("plotButton")
-		#self.updatePlotButton = QtWidgets.QPushButton(self.centralwidget)
-		#self.updatePlotButton.setGeometry(QtCore.QRect(310, 500, 93, 28))
-		#self.updatePlotButton.setObjectName("updatePlotButton")
+
+		self.axisCheckBox = QtWidgets.QCheckBox(self.centralwidget)
+		self.axisCheckBox.setGeometry(QtCore.QRect(310, 450, 100, 20))
+		self.axisCheckBox.setObjectName("axisCheckBox")
+		self.axisCheckBox.setText("reset axis on update?")
+		self.axisCheckBox.adjustSize()
+
 		
 		self.inputFormatLabel = QtWidgets.QLabel(self.centralwidget)
 		self.inputFormatLabel.setGeometry(QtCore.QRect(420, 10, 81, 16))
@@ -371,7 +375,7 @@ class Ui_MainWindow(object):
 		self.sqcheck = None
 		self.fqcheck = None
 		self.grcheck = None
-
+		self.plotted = False
 		
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 		self.actionOpen.triggered.connect(self.open_file)
@@ -393,7 +397,7 @@ class Ui_MainWindow(object):
 
 		self.plotButton.clicked.connect(self.updateConfigFile)
 		self.plotButton.clicked.connect(self.startWorker)
-		#self.updatePlotButton.clicked.connect(self.plotUpdate)
+
 
 		self.updateParamDct()
 		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
@@ -487,7 +491,6 @@ class Ui_MainWindow(object):
 		self.twothetaButton.setText(_translate("MainWindow", "2theta"))
 		self.wavelengthLabel.setText(_translate("MainWindow", "wavelength"))
 		self.plotButton.setText(_translate("MainWindow", "Plot"))
-		#self.updatePlotButton.setText(_translate("MainWindow", "update plot"))
 		self.inputFormatLabel.setText(_translate("MainWindow", "Input format"))
 		self.menuFile.setTitle(_translate("MainWindow", "File"))
 		self.actionOpen.setText(_translate("MainWindow", "Open"))
@@ -560,6 +563,30 @@ class Ui_MainWindow(object):
 					'S(Q)': [self.q,self.sq,'Q (Å$^{-1}$)',self.plotlist[1]],
 					'F(Q)': [self.q,self.fq,'Q (Å$^{-1}$)',self.plotlist[2]],
 					'G(r)': [self.r,self.gr,'r (Å)',self.plotlist[3]]}
+		
+		holdAxes = self.plotted and self.noplots != 1 and not self.axisCheckBox.isChecked()
+		if holdAxes:
+			#get plot limits so updates don't reset axes
+			xlims = {}
+			ylims = {}
+			plotno = 0
+			
+			for c,plot in enumerate(self.plotlist):
+				if not plot:
+					continue
+				if c == 0:
+					xlims['iq'] = self.ax[plotno].get_xlim()
+					ylims['iq'] = self.ax[plotno].get_ylim()
+				elif c == 1:
+					xlims['sq'] = self.ax[plotno].get_xlim()
+					ylims['sq'] = self.ax[plotno].get_ylim()
+				elif c == 2:
+					xlims['fq'] = self.ax[plotno].get_xlim()
+					ylims['fq'] = self.ax[plotno].get_ylim()
+				elif c == 3:
+					xlims['gr'] = self.ax[plotno].get_xlim()
+					ylims['gr'] = self.ax[plotno].get_ylim()
+				plotno += 1
 
 		linethickness = 1
 		if self.noplots == 1:
@@ -583,37 +610,54 @@ class Ui_MainWindow(object):
 			plotno = 0
 
 			for c,plot in enumerate(self.plotlist):
-				if plot:
-					if c == 0:
-
-						self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering',linewidth = linethickness)
-						self.ax[plotno].plot(self.qi,self.bkg,label = 'background',linewidth = linethickness)
-						self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference',linewidth = linethickness)
-						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-						self.ax[plotno].set_ylabel('Intensity')
-						self.ax[plotno].legend()
+				if not plot:
+					continue
+				if c == 0:
+					self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering',linewidth = linethickness)
+					self.ax[plotno].plot(self.qi,self.bkg,label = 'background',linewidth = linethickness)
+					self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference',linewidth = linethickness)
+					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_ylabel('Intensity')
+					self.ax[plotno].legend()
+					if holdAxes:
+						self.ax[plotno].set_xlim(*xlims['iq'])
+						self.ax[plotno].set_ylim(*ylims['iq'])
+					else:
 						self.ax[plotno].set_xlim(self.qi[0],self.qi[-1])
-
-					elif c == 1:
-						self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
-						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-						self.ax[plotno].set_ylabel('S(Q)')
+				elif c == 1:
+					self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
+					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_ylabel('S(Q)')
+					if holdAxes:
+						self.ax[plotno].set_xlim(*xlims['sq'])
+						self.ax[plotno].set_ylim(*ylims['sq'])
+					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
-					elif c == 2:
-						self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness)
-						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-						self.ax[plotno].set_ylabel('F(Q)')
+				elif c == 2:
+					self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness)
+					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_ylabel('F(Q)')
+					
+					if holdAxes:
+						self.ax[plotno].set_xlim(*xlims['fq'])
+						self.ax[plotno].set_ylim(*ylims['fq'])
+					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
-					elif c == 3:
-						self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
-						self.ax[plotno].set_xlabel('r (Å)')
-						self.ax[plotno].set_ylabel('G(r)')
+				elif c == 3:
+					self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
+					self.ax[plotno].set_xlabel('r (Å)')
+					self.ax[plotno].set_ylabel('G(r)')
+					if holdAxes:
+						self.ax[plotno].set_xlim(*xlims['gr'])
+						self.ax[plotno].set_ylim(*ylims['gr'])
+					else:
 						self.ax[plotno].set_xlim(self.r[0],self.r[-1])				
-					plotno += 1
+				plotno += 1
 		
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
 		plt.show()
+		self.plotted = True
 		plt.pause(0.01)
 
 		self.centralwidget.activateWindow()
@@ -646,7 +690,8 @@ class Ui_MainWindow(object):
 					self.qmaxrel.objectName(): [self.qmaxrel,self.qmaxrel.value()],
 					self.qmaxinstrel.objectName(): [self.qmaxinstrel, self.qmaxinstrel.value()],
 					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()],
-					self.qmaxtogether.objectName(): [self.qmaxtogether, str(self.qmaxtogether.isChecked())]}
+					self.qmaxtogether.objectName(): [self.qmaxtogether, str(self.qmaxtogether.isChecked())],
+					self.axisCheckBox.objectName(): [self.axisCheckBox, str(self.axisCheckBox.isChecked())]}
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
 		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
@@ -764,6 +809,7 @@ class Ui_MainWindow(object):
 		if self.running:
 			self.thread.qmin = self.qminbox.value()
 			self.thread.repeat = True
+
 	def updateQmax(self):
 		if self.qmaxtogether.isChecked():
 			self.qmaxinstbox.setValue(self.qmaxbox.value())
