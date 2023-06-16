@@ -5,6 +5,7 @@ To run do "python pdfgetx3_gui.py" in the terminal. Plots update on changing par
 
 Selected measurement files and background files are put into lists so they can be easily accessed again later. Press 'Plot' to run the calculation and display the selected plots (can choose any from I(Q), S(Q), F(Q), and G(r)). Pressing 'Save' will save text files containing the data of the selected plots. If the input format is '2theta', 'Save' will also return the background subtracted data as a function of 2theta with the name of \<base file name\>_bkgsub.xy.
 
-![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/c3fab7ea-9bce-4350-bf2d-e1328c1e91ff)
+![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/b8d14f24-ade6-462e-8039-b3a459e99d71)
+
 
 ![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/e573365f-f47b-46eb-9e6f-6fc639ccaf21)
