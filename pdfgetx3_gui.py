@@ -507,6 +507,9 @@ class Ui_MainWindow(object):
 		self.qmaxtogether.clicked.connect(self.updateConfigFile)
 		self.linearRebinGradientBox.valueChanged.connect(self.updateConfigFile)
 		self.exponentialRebinConstant.valueChanged.connect(self.updateConfigFile)
+		self.linearRebin.clicked.connect(self.updatexy)
+		self.exponentialRebin.clicked.connect(self.updatexy)
+		self.noRebin.clicked.connect(self.stopRebin)
 
 		self.bkgscalerel.setKeyboardTracking(False)
 		self.bkgscalerel.valueChanged.connect(lambda: self.changeStep(self.bkgscalebox))
@@ -979,8 +982,14 @@ class Ui_MainWindow(object):
 	def updatexy(self):
 		
 		if self.running and not self.noRebin.isChecked():
+
 			x,y = np.loadtxt(self.filename.text(),unpack=True,usecols=(0,1),comments='#')
 			self.thread.x, self.thread.y = self.qRebin(x,y)
+			self.thread.repeat = True
+	def stopRebin(self):
+		if self.running and self.noRebin.isChecked():
+			self.thread.x = None
+			self.thread.y = None
 			self.thread.repeat = True
 	
 	def updateConfigFile(self):
