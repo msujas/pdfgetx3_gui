@@ -5,7 +5,7 @@ To run do "python pdfgetx3_gui.py" in the terminal. Plots update on changing par
 
 Selected measurement files and background files are put into lists so they can be easily accessed again later. Press 'Plot' to run the calculation and display the selected plots (can choose any from I(Q), S(Q), F(Q), and G(r)). Pressing 'Save' will save text files containing the data of the selected plots. If the input format is '2theta', 'Save' will also return the background subtracted data as a function of 2theta with the name of \<base file name\>_bkgsub.xy.
 
-Rebinning options were added 28/6/2023. I haven't tested it a huge amount. I may add more options for it in the future (e.g. option to change gradient for linear or exponent constant in the exponential one).
+Rebinning options were added 28/6/2023. I haven't tested it a huge amount.
 
 ![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/fc83070f-fa28-4b62-b7c0-ac6c5273f769)
 
