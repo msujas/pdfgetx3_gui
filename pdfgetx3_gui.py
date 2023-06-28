@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 import time
+from scipy.interpolate import interp1d
 matplotlib.rcParams.update({'font.size': 10})
 
 def bool_to_text(boolean: bool) -> str:
@@ -33,7 +34,7 @@ class Worker(QtCore.QThread):
 
 
 	def __init__(self,file: str,bkgfile: str,bkgscale: float,composition: str, dataformat: str,qmin: float,qmax: float,qmaxinst: float, 
-	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float):
+	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float, x, y):
 		super(Worker,self).__init__()
 		self.file = file
 		self.bkgfile = bkgfile
@@ -49,14 +50,15 @@ class Worker(QtCore.QThread):
 		self.rstep = rstep
 		self.wavelength = wavelength
 		self.running = True
-
+		self.x = x
+		self.y = y
 
 	def run(self):
 		while self.running:
 			qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
 			composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
 			rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
-			rstep = self.rstep,wavelength = self.wavelength)
+			rstep = self.rstep,wavelength = self.wavelength, x = self.x, y = self.y)
 			self.repeat = False
 			self.outputs.emit([qi,iq,bkg,q,sq,fq,r, gr])
 
@@ -258,7 +260,34 @@ class Ui_MainWindow(object):
 		self.rpolyLabel = QtWidgets.QLabel(self.centralwidget)
 		self.rpolyLabel.setGeometry(QtCore.QRect(371, 350, 81, 16))
 		self.rpolyLabel.setObjectName("rpolyLabel")
+
+		self.regridGroup = QtWidgets.QButtonGroup(self.centralwidget)
+
+		self.noRebin = QtWidgets.QRadioButton(self.centralwidget)
+		self.noRebin.setGeometry(QtCore.QRect(350, 380, 81, 16))
+		self.noRebin.setText('no rebin')
+		self.noRebin.setChecked(True)
+		self.noRebin.adjustSize()
+		self.noRebin.setObjectName('noRebin')
 		
+		self.linearRebin = QtWidgets.QRadioButton(self.centralwidget)
+		self.linearRebin.setGeometry(QtCore.QRect(420, 380, 81, 16))
+		self.linearRebin.setText('linear rebin')
+		self.linearRebin.setChecked(False)
+		self.linearRebin.adjustSize()
+		self.linearRebin.setObjectName('linearRebin')
+		
+		self.exponentialRebin = QtWidgets.QRadioButton(self.centralwidget)
+		self.exponentialRebin.setGeometry(QtCore.QRect(510, 380, 81, 16))
+		self.exponentialRebin.setText('exponential rebin')
+		self.exponentialRebin.setChecked(False)
+		self.exponentialRebin.adjustSize()
+		self.exponentialRebin.setObjectName('exponentialRegrid')
+		
+		self.regridGroup.addButton(self.noRebin)
+		self.regridGroup.addButton(self.linearRebin)
+		self.regridGroup.addButton(self.exponentialRebin)
+
 		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
 		self.fileLabel.setGeometry(QtCore.QRect(280, 10, 55, 16))
 		self.fileLabel.setObjectName("fileLabel")
@@ -506,8 +535,21 @@ class Ui_MainWindow(object):
 			self.thread.stop()
 		
 		inputfile=self.filename.text()
-		x = np.loadtxt(inputfile,comments = '#', unpack = True, usecols=0)
+		x,y = np.loadtxt(inputfile,comments = '#', unpack = True, usecols=(0,1))
+		if self.noRebin.isChecked():
+			xrebin = None
+			yrebin = None
+		else:
+			xrebin,yrebin = self.qRebin(x,y)
 		bkgfile=self.bkgfilename.text()
+		if not self.noRebin.isChecked():
+			xback, yback = np.loadtxt(bkgfile,comments = '#', unpack = True, usecols = (0,1))
+			xbrebin,ybrebin = self.qRebin(xback,yback)
+			if not os.path.exists('tmp/'):
+				os.makedirs('tmp/')
+			tmpbkgfile = 'tmp/tmp_bkg.xy'
+			np.savetxt(tmpbkgfile,np.array([xbrebin,ybrebin]).transpose(), fmt = '%.6f')
+			bkgfile = tmpbkgfile
 		bkgscale=self.bkgscalebox.value()
 		composition = self.compositionBox.text()
 		qmin=self.qminbox.value()
@@ -551,7 +593,8 @@ class Ui_MainWindow(object):
 			self.dataformat = 'twotheta'
 		self.running = True
 		self.thread = Worker(file = inputfile, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
-		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength)
+		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength, x = xrebin,
+		y = yrebin)
 		plt.ion()
 		self.thread.start()
 		self.thread.outputs.connect(self.plotUpdate)
@@ -662,6 +705,52 @@ class Ui_MainWindow(object):
 
 		self.centralwidget.activateWindow()
 
+	def qRebin(self, q, intensity):
+		if self.noRebin.isChecked():
+			return q, intensity
+		
+		qspacing = (q[-1] - q[0])/len(q)
+		qovergrid = np.arange(q[0],q[-1]+qspacing/10, qspacing/10)
+		regridfunc = interp1d(q,intensity) #from scipy
+		intovergrid = regridfunc(qovergrid)
+		if self.linearRebin.isChecked():
+			gradient = 1.1
+			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
+			newint = np.array([])
+			for n in range(len(newq)):
+				if n == 0:
+					qminval = newq[n]
+				else:
+					qminval = (newq[n] + newq[n-1])/2
+				if n == len(newq)-1:
+					qmaxval = newq[n]
+				else:
+					qmaxval = (newq[n+1] + newq[n])/2
+				qominindex = np.abs(qovergrid - qminval).argmin()
+				qomaxindex = np.abs(qovergrid - qmaxval).argmin()
+				intensityn = np.average(intovergrid[qominindex:qomaxindex])
+				newint = np.append(newint,intensityn)
+			return newq, newint
+	
+		elif self.exponentialRebin.isChecked():
+			exponent = 0.001
+			newq = np.array([qn*np.exp(exponent*i) for i,qn in enumerate(q) if qn*np.exp(exponent*i) < q[-1]])
+			newint = np.array([])
+			for n in range(len(newq)):
+				if n == 0:
+					qminval = newq[n]
+				else:
+					qminval = (newq[n] + newq[n-1])/2
+				if n == len(newq)-1:
+					qmaxval = newq[n]
+				else:
+					qmaxval = (newq[n+1] + newq[n])/2
+				qominindex = np.abs(qovergrid - qminval).argmin()
+				qomaxindex = np.abs(qovergrid - qmaxval).argmin()
+				intensityn = np.average(intovergrid[qominindex:qomaxindex])
+				newint = np.append(newint,intensityn)
+
+			return newq, newint
 	def updateParamDct(self):
 		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
 					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],
@@ -691,7 +780,10 @@ class Ui_MainWindow(object):
 					self.qmaxinstrel.objectName(): [self.qmaxinstrel, self.qmaxinstrel.value()],
 					self.rpolyrel.objectName(): [self.rpolyrel,self.rpolyrel.value()],
 					self.qmaxtogether.objectName(): [self.qmaxtogether, str(self.qmaxtogether.isChecked())],
-					self.axisCheckBox.objectName(): [self.axisCheckBox, str(self.axisCheckBox.isChecked())]}
+					self.axisCheckBox.objectName(): [self.axisCheckBox, str(self.axisCheckBox.isChecked())],
+					self.noRebin.objectName(): [self.noRebin, str(self.noRebin.isChecked())],
+					self.linearRebin.objectName(): [self.linearRebin, str(self.linearRebin.isChecked())],
+					self.exponentialRebin.objectName(): [self.exponentialRebin, str(self.exponentialRebin.isChecked())]}
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
 		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
