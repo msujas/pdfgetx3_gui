@@ -747,7 +747,7 @@ class Ui_MainWindow(object):
 			return q, intensity
 		
 		qspacing = (q[-1] - q[0])/len(q)
-		qovergrid = np.arange(q[0],q[-1]+qspacing/10, qspacing/10)
+		qovergrid = np.arange(q[0],q[-1], qspacing/10)
 		regridfunc = interp1d(q,intensity) #from scipy
 		intovergrid = regridfunc(qovergrid)
 		if self.linearRebin.isChecked():
