@@ -276,14 +276,46 @@ class Ui_MainWindow(object):
 		self.linearRebin.setChecked(False)
 		self.linearRebin.adjustSize()
 		self.linearRebin.setObjectName('linearRebin')
+
+		self.linearRebinLabel = QtWidgets.QLabel(self.centralwidget)
+		self.linearRebinLabel.setGeometry(QtCore.QRect(420, 400, 100, 18))
+		self.linearRebinLabel.setText('linear rebin\ngradient')
+		self.linearRebinLabel.adjustSize()
+		self.linearRebinLabel.setObjectName('linearRebinLabel')
 		
+		self.linearRebinGradientBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.linearRebinGradientBox.setGeometry(420,430, 50, 20)
+		self.linearRebinGradientBox.setObjectName('linearRebinGradientBox')
+		self.linearRebinGradientBox.setValue(1.1)
+		self.linearRebinGradientBox.setDecimals(2)
+		self.linearRebinGradientBox.setMinimum(1.0)
+		self.linearRebinGradientBox.setMaximum(2.0)
+		self.linearRebinGradientBox.setSingleStep(0.1)
+		self.linearRebinGradientBox.setKeyboardTracking(False)
+
 		self.exponentialRebin = QtWidgets.QRadioButton(self.centralwidget)
 		self.exponentialRebin.setGeometry(QtCore.QRect(510, 380, 81, 16))
 		self.exponentialRebin.setText('exponential rebin')
 		self.exponentialRebin.setChecked(False)
 		self.exponentialRebin.adjustSize()
 		self.exponentialRebin.setObjectName('exponentialRegrid')
-		
+
+		self.exponentialRebinLabel = QtWidgets.QLabel(self.centralwidget)
+		self.exponentialRebinLabel.setGeometry(QtCore.QRect(510, 400, 100, 16))
+		self.exponentialRebinLabel.setText('exponential constant')
+		self.exponentialRebinLabel.adjustSize()
+		self.exponentialRebinLabel.setObjectName('exponentialRebinLabel')
+
+		self.exponentialRebinConstant = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.exponentialRebinConstant.setGeometry(510,430, 70, 20)
+		self.exponentialRebinConstant.setObjectName('exponentialRebinConstant')
+		self.exponentialRebinConstant.setDecimals(4)
+		self.exponentialRebinConstant.setValue(0.0005)
+		self.exponentialRebinConstant.setMinimum(0)
+		self.exponentialRebinConstant.setMaximum(0.01)
+		self.exponentialRebinConstant.setSingleStep(0.0001)
+		self.exponentialRebinConstant.setKeyboardTracking(False)		
+
 		self.regridGroup.addButton(self.noRebin)
 		self.regridGroup.addButton(self.linearRebin)
 		self.regridGroup.addButton(self.exponentialRebin)
@@ -453,7 +485,8 @@ class Ui_MainWindow(object):
 		self.qmaxinstbox.valueChanged.connect(self.setQmax_lims)
 		self.qmaxinstbox.valueChanged.connect(self.updateQmaxinst)
 		self.rpolybox.valueChanged.connect(self.updateRpoly)
-		
+		self.linearRebinGradientBox.valueChanged.connect(self.updatexy)
+		self.exponentialRebinConstant.valueChanged.connect(self.updatexy)
 
 		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
 		self.rminBox.valueChanged.connect(self.updateConfigFile)
@@ -472,7 +505,8 @@ class Ui_MainWindow(object):
 		self.QButton.clicked.connect(self.updateConfigFile)
 		self.twothetaButton.clicked.connect(self.updateConfigFile)
 		self.qmaxtogether.clicked.connect(self.updateConfigFile)
-
+		self.linearRebinGradientBox.valueChanged.connect(self.updateConfigFile)
+		self.exponentialRebinConstant.valueChanged.connect(self.updateConfigFile)
 
 		self.bkgscalerel.setKeyboardTracking(False)
 		self.bkgscalerel.valueChanged.connect(lambda: self.changeStep(self.bkgscalebox))
@@ -714,7 +748,7 @@ class Ui_MainWindow(object):
 		regridfunc = interp1d(q,intensity) #from scipy
 		intovergrid = regridfunc(qovergrid)
 		if self.linearRebin.isChecked():
-			gradient = 1.1
+			gradient = self.linearRebinGradientBox.value()
 			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
 			newint = np.array([])
 			for n in range(len(newq)):
@@ -733,7 +767,7 @@ class Ui_MainWindow(object):
 			return newq, newint
 	
 		elif self.exponentialRebin.isChecked():
-			exponent = 0.001
+			exponent = self.exponentialRebinConstant.value()
 			newq = np.array([qn*np.exp(exponent*i) for i,qn in enumerate(q) if qn*np.exp(exponent*i) < q[-1]])
 			newint = np.array([])
 			for n in range(len(newq)):
@@ -783,7 +817,9 @@ class Ui_MainWindow(object):
 					self.axisCheckBox.objectName(): [self.axisCheckBox, str(self.axisCheckBox.isChecked())],
 					self.noRebin.objectName(): [self.noRebin, str(self.noRebin.isChecked())],
 					self.linearRebin.objectName(): [self.linearRebin, str(self.linearRebin.isChecked())],
-					self.exponentialRebin.objectName(): [self.exponentialRebin, str(self.exponentialRebin.isChecked())]}
+					self.exponentialRebin.objectName(): [self.exponentialRebin, str(self.exponentialRebin.isChecked())],
+					self.linearRebinGradientBox.objectName():[self.linearRebinGradientBox, self.linearRebinGradientBox.value()],
+					self.exponentialRebinConstant.objectName(): [self.exponentialRebinConstant, self.exponentialRebinConstant.value()] }
 	def open_file(self):
 		filter = "data file (*.txt *.dat *.xy *.xye *.csv)"
 		dialog = QtWidgets.QFileDialog.getOpenFileName(caption = 'select data file', filter = filter,
@@ -939,6 +975,12 @@ class Ui_MainWindow(object):
 	def updateComposition(self):
 		if self.running:
 			self.thread.composition = self.compositionBox.text()
+			self.thread.repeat = True
+	def updatexy(self):
+		
+		if self.running and not self.noRebin.isChecked():
+			x,y = np.loadtxt(self.filename.text(),unpack=True,usecols=(0,1),comments='#')
+			self.thread.x, self.thread.y = self.qRebin(x,y)
 			self.thread.repeat = True
 	
 	def updateConfigFile(self):
