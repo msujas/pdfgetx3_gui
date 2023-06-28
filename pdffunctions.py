@@ -11,13 +11,19 @@ from diffpy.pdfgetx.pdfgetter import PDFGetter
 
 
 def run_pdfgetx3(file: str,bkgfile: str,bkgscale: float,composition: str, qmin: float,qmax: float,qmaxinst: float,rpoly: float,
-dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2):
+dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, x= None, y= None):
+	
 	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, composition = composition, 
 	backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
 	if dataformat == 'twotheta':
 		config.wavelength = wavelength
 	pdfcalc = PDFGetter(config = config)
-	pdfcalc(filename = file)
+	if type(x) == np.ndarray:
+		pdfcalc(x,y)
+	else:
+		pdfcalc(filename = file)
+
+
 	r = pdfcalc.gr[0]
 	gr = pdfcalc.gr[1]
 	fq = pdfcalc.fq[1]
