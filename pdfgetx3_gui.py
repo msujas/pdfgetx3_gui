@@ -643,6 +643,12 @@ class Ui_MainWindow(object):
 					'S(Q)': [self.q,self.sq,'Q (Å$^{-1}$)',self.plotlist[1]],
 					'F(Q)': [self.q,self.fq,'Q (Å$^{-1}$)',self.plotlist[2]],
 					'G(r)': [self.r,self.gr,'r (Å)',self.plotlist[3]]}
+		if not self.plotted:	
+			self.q0 = self.q
+			self.sq0 = self.sq
+			self.fq0 = self.fq
+			self.gr0 = self.gr
+			self.r0 = self.r
 		
 		holdAxes = self.plotted and self.noplots != 1 and not self.axisCheckBox.isChecked()
 		if holdAxes:
@@ -669,12 +675,20 @@ class Ui_MainWindow(object):
 				plotno += 1
 
 		linethickness = 1
+		tranparency0 = 0.5
 		if self.noplots == 1:
 			self.ax.cla()
 			for item in plotDct:
 				if plotDct[item][-1]:
 					x = plotDct[item][0]
 					y = plotDct[item][1]
+					if item == 'S(Q)':
+						self.ax.plot(self.q0,self.sq0,alpha = tranparency0, color = 'gray')
+					elif item == 'F(Q)':
+						self.ax.plot(self.q0,self.fq0,alpha = tranparency0, color = 'gray')
+					elif item == 'G(r)':
+						self.ax.plot(self.r0,self.gr0,alpha = tranparency0, color = 'gray')
+						
 					self.ax.plot(x,y,label = 'measured',linewidth = linethickness)
 					if item == 'I(Q)':
 						self.ax.plot(x,self.bkg, label = 'background',linewidth = linethickness)
@@ -688,7 +702,7 @@ class Ui_MainWindow(object):
 				self.ax[n].cla()
 
 			plotno = 0
-
+			
 			for c,plot in enumerate(self.plotlist):
 				if not plot:
 					continue
@@ -705,18 +719,22 @@ class Ui_MainWindow(object):
 					else:
 						self.ax[plotno].set_xlim(self.qi[0],self.qi[-1])
 				elif c == 1:
+					self.ax[plotno].plot(self.q0,self.sq0, alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('S(Q)')
+					
 					if holdAxes:
 						self.ax[plotno].set_xlim(*xlims['sq'])
 						self.ax[plotno].set_ylim(*ylims['sq'])
 					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 				elif c == 2:
+					self.ax[plotno].plot(self.q0,self.fq0, alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('F(Q)')
+					
 					
 					if holdAxes:
 						self.ax[plotno].set_xlim(*xlims['fq'])
@@ -724,16 +742,18 @@ class Ui_MainWindow(object):
 					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 				elif c == 3:
+					self.ax[plotno].plot(self.r0,self.gr0, alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('r (Å)')
 					self.ax[plotno].set_ylabel('G(r)')
+					
 					if holdAxes:
 						self.ax[plotno].set_xlim(*xlims['gr'])
 						self.ax[plotno].set_ylim(*ylims['gr'])
 					else:
 						self.ax[plotno].set_xlim(self.r[0],self.r[-1])				
 				plotno += 1
-		
+
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
 		plt.show()
@@ -753,9 +773,6 @@ class Ui_MainWindow(object):
 		if self.linearRebin.isChecked():
 			gradient = self.linearRebinGradientBox.value()
 			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
-
-
-	
 		elif self.exponentialRebin.isChecked():
 			exponent = self.exponentialRebinConstant.value()
 			newq = np.array([qn*np.exp(exponent*i) for i,qn in enumerate(q) if qn*np.exp(exponent*i) < q[-1]])
