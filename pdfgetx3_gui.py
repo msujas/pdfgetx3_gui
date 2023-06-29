@@ -4,7 +4,7 @@
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
-# WARNING! All changes made in this file will be lost!
+# GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -746,48 +746,36 @@ class Ui_MainWindow(object):
 		if self.noRebin.isChecked():
 			return q, intensity
 		
-		qspacing = (q[-1] - q[0])/len(q)
-		qovergrid = np.arange(q[0],q[-1], qspacing/10)
+		qspacing = (q[-1] - q[0])/(len(q)-1)
+		qovergrid = np.arange(q[0],q[-1], qspacing/15)
 		regridfunc = interp1d(q,intensity) #from scipy
 		intovergrid = regridfunc(qovergrid)
 		if self.linearRebin.isChecked():
 			gradient = self.linearRebinGradientBox.value()
 			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
-			newint = np.array([])
-			for n in range(len(newq)):
-				if n == 0:
-					qminval = newq[n]
-				else:
-					qminval = (newq[n] + newq[n-1])/2
-				if n == len(newq)-1:
-					qmaxval = newq[n]
-				else:
-					qmaxval = (newq[n+1] + newq[n])/2
-				qominindex = np.abs(qovergrid - qminval).argmin()
-				qomaxindex = np.abs(qovergrid - qmaxval).argmin()
-				intensityn = np.average(intovergrid[qominindex:qomaxindex])
-				newint = np.append(newint,intensityn)
-			return newq, newint
+
+
 	
 		elif self.exponentialRebin.isChecked():
 			exponent = self.exponentialRebinConstant.value()
 			newq = np.array([qn*np.exp(exponent*i) for i,qn in enumerate(q) if qn*np.exp(exponent*i) < q[-1]])
-			newint = np.array([])
-			for n in range(len(newq)):
-				if n == 0:
-					qminval = newq[n]
-				else:
-					qminval = (newq[n] + newq[n-1])/2
-				if n == len(newq)-1:
-					qmaxval = newq[n]
-				else:
-					qmaxval = (newq[n+1] + newq[n])/2
-				qominindex = np.abs(qovergrid - qminval).argmin()
-				qomaxindex = np.abs(qovergrid - qmaxval).argmin()
-				intensityn = np.average(intovergrid[qominindex:qomaxindex])
-				newint = np.append(newint,intensityn)
 
-			return newq, newint
+		newint = np.array([])
+		for n in range(len(newq)):
+			if n == 0:
+				qminval = newq[n]
+			else:
+				qminval = (newq[n] + newq[n-1])/2
+			if n == len(newq)-1:
+				qmaxval = newq[n]
+			else:
+				qmaxval = (newq[n+1] + newq[n])/2
+			qominindex = np.abs(qovergrid - qminval).argmin()
+			qomaxindex = np.abs(qovergrid - qmaxval).argmin()
+			intensityn = np.average(intovergrid[qominindex:qomaxindex])
+			newint = np.append(newint,intensityn)
+		return newq, newint
+		
 	def updateParamDct(self):
 		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
 					self.bkgfilename.objectName(): [self.bkgfilename, self.bkgfilename.text()],

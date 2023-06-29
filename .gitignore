@@ -18,3 +18,6 @@ exampleFiles/startup.txt
 exampleFiles/BeamParameters.txt
 exampleFiles/capillary.xy
 tmp
+regridTest.py
+pdfgetx3_gui.bat
+__pycache__
