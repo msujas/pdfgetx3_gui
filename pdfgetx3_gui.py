@@ -7,7 +7,7 @@
 # GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 import os
 import pdffunctions
 import matplotlib.pyplot as plt
@@ -17,11 +17,7 @@ import time
 from scipy.interpolate import interp1d
 matplotlib.rcParams.update({'font.size': 10})
 
-def bool_to_text(boolean: bool) -> str:
-	if boolean == True:
-		return 'True'
-	else:
-		return 'False'
+
 def text_to_bool(text: str) -> bool:
 	if 'True' in text:
 		return True
@@ -64,7 +60,6 @@ class Worker(QtCore.QThread):
 
 
 			while self.repeat == False:
-
 				time.sleep(0.01)
 		return
 	def stop(self):
@@ -510,6 +505,9 @@ class Ui_MainWindow(object):
 		self.linearRebin.clicked.connect(self.updatexy)
 		self.exponentialRebin.clicked.connect(self.updatexy)
 		self.noRebin.clicked.connect(self.stopRebin)
+		self.noRebin.clicked.connect(self.updateConfigFile)
+		self.linearRebin.clicked.connect(self.updateConfigFile)
+		self.exponentialRebin.clicked.connect(self.updateConfigFile)
 
 		self.bkgscalerel.setKeyboardTracking(False)
 		self.bkgscalerel.valueChanged.connect(lambda: self.changeStep(self.bkgscalebox))
@@ -719,7 +717,8 @@ class Ui_MainWindow(object):
 					else:
 						self.ax[plotno].set_xlim(self.qi[0],self.qi[-1])
 				elif c == 1:
-					self.ax[plotno].plot(self.q0,self.sq0, alpha = tranparency0, color = 'gray')
+					self.ax[plotno].plot(self.q0,self.sq0*((np.max(self.sq)-np.min(self.sq))/(np.max(self.sq0)-np.min(self.sq0))), 
+			  alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('S(Q)')
@@ -730,7 +729,8 @@ class Ui_MainWindow(object):
 					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 				elif c == 2:
-					self.ax[plotno].plot(self.q0,self.fq0, alpha = tranparency0, color = 'gray')
+					self.ax[plotno].plot(self.q0,self.fq0*((np.max(self.fq)-np.min(self.fq))/(np.max(self.fq0)-np.min(self.fq0))), 
+			  alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('F(Q)')
@@ -742,7 +742,8 @@ class Ui_MainWindow(object):
 					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
 				elif c == 3:
-					self.ax[plotno].plot(self.r0,self.gr0, alpha = tranparency0, color = 'gray')
+					self.ax[plotno].plot(self.r0,self.gr0*((np.max(self.gr)-np.min(self.gr))/(np.max(self.gr0)-np.min(self.gr0))), 
+			  		alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('r (Å)')
 					self.ax[plotno].set_ylabel('G(r)')
