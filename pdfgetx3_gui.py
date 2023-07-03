@@ -284,7 +284,7 @@ class Ui_MainWindow(object):
 		self.linearRebinGradientBox.setValue(1.1)
 		self.linearRebinGradientBox.setDecimals(2)
 		self.linearRebinGradientBox.setMinimum(1.0)
-		self.linearRebinGradientBox.setMaximum(2.0)
+		self.linearRebinGradientBox.setMaximum(3.0)
 		self.linearRebinGradientBox.setSingleStep(0.1)
 		self.linearRebinGradientBox.setKeyboardTracking(False)
 
@@ -576,15 +576,7 @@ class Ui_MainWindow(object):
 			yrebin = None
 		else:
 			xrebin,yrebin = self.qRebin(x,y)
-		bkgfile=self.bkgfilename.text()
-		if not self.noRebin.isChecked():
-			xback, yback = np.loadtxt(bkgfile,comments = '#', unpack = True, usecols = (0,1))
-			xbrebin,ybrebin = self.qRebin(xback,yback)
-			if not os.path.exists('tmp/'):
-				os.makedirs('tmp/')
-			tmpbkgfile = 'tmp/tmp_bkg.xy'
-			np.savetxt(tmpbkgfile,np.array([xbrebin,ybrebin]).transpose(), fmt = '%.6f')
-			bkgfile = tmpbkgfile
+		bkgfile= self.updatebkgfile()
 		bkgscale=self.bkgscalebox.value()
 		composition = self.compositionBox.text()
 		qmin=self.qminbox.value()
@@ -716,6 +708,8 @@ class Ui_MainWindow(object):
 						self.ax[plotno].set_ylim(*ylims['iq'])
 					else:
 						self.ax[plotno].set_xlim(self.qi[0],self.qi[-1])
+					self.ax[plotno].xaxis.set_label_coords(0.5,-0.08)
+
 				elif c == 1:
 					self.ax[plotno].plot(self.q0,self.sq0*((np.max(self.sq)-np.min(self.sq))/(np.max(self.sq0)-np.min(self.sq0))), 
 			  alpha = tranparency0, color = 'gray')
@@ -728,6 +722,8 @@ class Ui_MainWindow(object):
 						self.ax[plotno].set_ylim(*ylims['sq'])
 					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
+					self.ax[plotno].xaxis.set_label_coords(0.5,-0.08)
+
 				elif c == 2:
 					self.ax[plotno].plot(self.q0,self.fq0*((np.max(self.fq)-np.min(self.fq))/(np.max(self.fq0)-np.min(self.fq0))), 
 			  alpha = tranparency0, color = 'gray')
@@ -741,6 +737,8 @@ class Ui_MainWindow(object):
 						self.ax[plotno].set_ylim(*ylims['fq'])
 					else:
 						self.ax[plotno].set_xlim(self.q[0],self.q[-1])
+					self.ax[plotno].xaxis.set_label_coords(0.5,-0.08)
+
 				elif c == 3:
 					self.ax[plotno].plot(self.r0,self.gr0*((np.max(self.gr)-np.min(self.gr))/(np.max(self.gr0)-np.min(self.gr0))), 
 			  		alpha = tranparency0, color = 'gray')
@@ -752,7 +750,8 @@ class Ui_MainWindow(object):
 						self.ax[plotno].set_xlim(*xlims['gr'])
 						self.ax[plotno].set_ylim(*ylims['gr'])
 					else:
-						self.ax[plotno].set_xlim(self.r[0],self.r[-1])				
+						self.ax[plotno].set_xlim(self.r[0],self.r[-1])	
+					self.ax[plotno].xaxis.set_label_coords(0.5,-0.08)			
 				plotno += 1
 
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
@@ -775,8 +774,9 @@ class Ui_MainWindow(object):
 			gradient = self.linearRebinGradientBox.value()
 			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
 		elif self.exponentialRebin.isChecked():
+			power = 1
 			exponent = self.exponentialRebinConstant.value()
-			newq = np.array([qn*np.exp(exponent*i) for i,qn in enumerate(q) if qn*np.exp(exponent*i) < q[-1]])
+			newq = np.array([qn*np.exp((exponent*i)**power) for i,qn in enumerate(q) if qn*np.exp((exponent*i)**power) < q[-1]])
 
 		newint = np.array([])
 		for n in range(len(newq)):
@@ -991,12 +991,28 @@ class Ui_MainWindow(object):
 
 			x,y = np.loadtxt(self.filename.text(),unpack=True,usecols=(0,1),comments='#')
 			self.thread.x, self.thread.y = self.qRebin(x,y)
+			newbkgfile = self.updatebkgfile()
+			self.thread.bkgfile = newbkgfile
 			self.thread.repeat = True
+
+	def updatebkgfile(self):
+		bkgfile = self.bkgfilename.text()
+		if not self.noRebin.isChecked():
+			xback, yback = np.loadtxt(bkgfile,comments = '#', unpack = True, usecols = (0,1))
+			xbrebin,ybrebin = self.qRebin(xback,yback)
+			if not os.path.exists('tmp/'):
+				os.makedirs('tmp/')
+			tmpbkgfile = 'tmp/tmp_bkg.xy'
+			np.savetxt(tmpbkgfile,np.array([xbrebin,ybrebin]).transpose(),fmt = '%.6f')
+			return tmpbkgfile
+		else:
+			return bkgfile
 	def stopRebin(self):
 		if self.running and self.noRebin.isChecked():
 			self.thread.x = None
 			self.thread.y = None
 			self.thread.repeat = True
+			self.thread.bkgfile = self.bkgfilename.text()
 	
 	def updateConfigFile(self):
 
