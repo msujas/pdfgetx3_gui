@@ -297,20 +297,36 @@ class Ui_MainWindow(object):
 
 		self.exponentialRebinLabel = QtWidgets.QLabel(self.centralwidget)
 		self.exponentialRebinLabel.setGeometry(QtCore.QRect(510, 400, 100, 16))
-		self.exponentialRebinLabel.setText('exponential constant')
+		self.exponentialRebinLabel.setText('exponential\nconstant')
 		self.exponentialRebinLabel.adjustSize()
 		self.exponentialRebinLabel.setObjectName('exponentialRebinLabel')
 
 		self.exponentialRebinConstant = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.exponentialRebinConstant.setGeometry(510,430, 70, 20)
 		self.exponentialRebinConstant.setObjectName('exponentialRebinConstant')
-		self.exponentialRebinConstant.setDecimals(4)
+		self.exponentialRebinConstant.setDecimals(5)
 		self.exponentialRebinConstant.setValue(0.0005)
 		self.exponentialRebinConstant.setMinimum(0)
 		self.exponentialRebinConstant.setMaximum(0.01)
 		self.exponentialRebinConstant.setSingleStep(0.0001)
-		self.exponentialRebinConstant.setKeyboardTracking(False)		
+		self.exponentialRebinConstant.setKeyboardTracking(False)
+		
+		'''
+		self.exponentialRebinOrderLabel = QtWidgets.QLabel(self.centralwidget)
+		self.exponentialRebinOrderLabel.setGeometry(QtCore.QRect(600, 400, 100, 16))
+		self.exponentialRebinOrderLabel.setText('exponential\norder')
+		self.exponentialRebinOrderLabel.adjustSize()
+		self.exponentialRebinOrderLabel.setObjectName('exponentialRebinOrderLabel')
 
+		self.exponentialRebinOrder = QtWidgets.QSpinBox(self.centralwidget)
+		self.exponentialRebinOrder.setGeometry(600,430, 40, 20)
+		self.exponentialRebinOrder.setObjectName('exponentialRebinOrder')
+		self.exponentialRebinOrder.setValue(1)
+		self.exponentialRebinOrder.setMinimum(1)
+		self.exponentialRebinOrder.setMaximum(5)
+		self.exponentialRebinOrder.setSingleStep(1)
+		self.exponentialRebinOrder.setKeyboardTracking(False)			
+		'''
 		self.regridGroup.addButton(self.noRebin)
 		self.regridGroup.addButton(self.linearRebin)
 		self.regridGroup.addButton(self.exponentialRebin)
@@ -482,6 +498,7 @@ class Ui_MainWindow(object):
 		self.rpolybox.valueChanged.connect(self.updateRpoly)
 		self.linearRebinGradientBox.valueChanged.connect(self.updatexy)
 		self.exponentialRebinConstant.valueChanged.connect(self.updatexy)
+		#self.exponentialRebinOrder.valueChanged.connect(self.updatexy)
 
 		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
 		self.rminBox.valueChanged.connect(self.updateConfigFile)
@@ -551,8 +568,8 @@ class Ui_MainWindow(object):
 		self.grCheckBox.setText(_translate("MainWindow", "G(r)"))
 		self.fileButton.setText(_translate("MainWindow", "..."))
 		self.fileButton.setShortcut(_translate("MainWindow", "Ctrl+O"))
-		self.QButton.setText(_translate("MainWindow", "Q"))
-		self.twothetaButton.setText(_translate("MainWindow", "2theta"))
+		self.QButton.setText(_translate("MainWindow", "Q (Å\u207B\u00B9)"))
+		self.twothetaButton.setText(_translate("MainWindow", "2theta (°)"))
 		self.wavelengthLabel.setText(_translate("MainWindow", "wavelength"))
 		self.plotButton.setText(_translate("MainWindow", "Plot"))
 		self.inputFormatLabel.setText(_translate("MainWindow", "Input format"))
@@ -726,8 +743,8 @@ class Ui_MainWindow(object):
 
 				elif c == 2:
 					self.ax[plotno].plot(self.q0,self.fq0*((np.max(self.fq)-np.min(self.fq))/(np.max(self.fq0)-np.min(self.fq0))), 
-			  alpha = tranparency0, color = 'gray')
-					self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness)
+			  alpha = tranparency0, color = 'gray',  markersize = 2)
+					self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness, markersize = 2)
 					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('F(Q)')
 					
@@ -774,7 +791,7 @@ class Ui_MainWindow(object):
 			gradient = self.linearRebinGradientBox.value()
 			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
 		elif self.exponentialRebin.isChecked():
-			power = 1
+			power = 1 #self.exponentialRebinOrder.value()
 			exponent = self.exponentialRebinConstant.value()
 			newq = np.array([qn*np.exp((exponent*i)**power) for i,qn in enumerate(q) if qn*np.exp((exponent*i)**power) < q[-1]])
 
@@ -792,7 +809,18 @@ class Ui_MainWindow(object):
 			qomaxindex = np.abs(qovergrid - qmaxval).argmin()
 			intensityn = np.average(intovergrid[qominindex:qomaxindex])
 			newint = np.append(newint,intensityn)
-		return newq, newint
+		newqmaxindex = np.abs(q-newq[-1]).argmin()
+		regridfunc2 = interp1d(newq,newint)
+		newintRG = regridfunc2(q[:newqmaxindex])
+
+		return q[:newqmaxindex], newintRG
+	
+	def twothetaoffset(self,x):
+		ttho = 0
+		if ttho < 10**(-5) or self.QButton.isChecked():
+			return x
+		else:
+			return x - ttho
 		
 	def updateParamDct(self):
 		self.paramDct = {self.filename.objectName(): [self.filename,self.filename.text()],
