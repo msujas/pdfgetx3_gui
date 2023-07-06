@@ -789,7 +789,7 @@ class Ui_MainWindow(object):
 		intovergrid = regridfunc(qovergrid)
 		if self.linearRebin.isChecked():
 			gradient = self.linearRebinGradientBox.value()
-			newq = np.array([qn*gradient for qn in q if qn*gradient < q[-1]])
+			newq = np.array([qn*gradient - (q[0]*gradient - q[0]) for qn in q if qn*gradient - (q[0]*gradient - q[0])  < q[-1]])
 		elif self.exponentialRebin.isChecked():
 			power = 1 #self.exponentialRebinOrder.value()
 			exponent = self.exponentialRebinConstant.value()
@@ -810,6 +810,7 @@ class Ui_MainWindow(object):
 			intensityn = np.average(intovergrid[qominindex:qomaxindex])
 			newint = np.append(newint,intensityn)
 		newqmaxindex = np.abs(q-newq[-1]).argmin()
+		#newqminindex = np.abs(q-newq[0]).argmin()
 		regridfunc2 = interp1d(newq,newint)
 		newintRG = regridfunc2(q[:newqmaxindex])
 
