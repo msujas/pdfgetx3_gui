@@ -284,7 +284,7 @@ class Ui_MainWindow(object):
 		self.linearRebinGradientBox.setValue(1.1)
 		self.linearRebinGradientBox.setDecimals(2)
 		self.linearRebinGradientBox.setMinimum(1.0)
-		self.linearRebinGradientBox.setMaximum(3.0)
+		self.linearRebinGradientBox.setMaximum(5.0)
 		self.linearRebinGradientBox.setSingleStep(0.1)
 		self.linearRebinGradientBox.setKeyboardTracking(False)
 
@@ -810,11 +810,10 @@ class Ui_MainWindow(object):
 			intensityn = np.average(intovergrid[qominindex:qomaxindex])
 			newint = np.append(newint,intensityn)
 		newqmaxindex = np.abs(q-newq[-1]).argmin()
-		#newqminindex = np.abs(q-newq[0]).argmin()
 		regridfunc2 = interp1d(newq,newint)
-		newintRG = regridfunc2(q[:newqmaxindex])
+		newintRG = regridfunc2(q[1:newqmaxindex])
 
-		return q[:newqmaxindex], newintRG
+		return q[1:newqmaxindex], newintRG
 	
 	def twothetaoffset(self,x):
 		ttho = 0
