@@ -7,6 +7,6 @@ Selected measurement files and background files are put into lists so they can b
 
 Rebinning options were added 28/6/2023. I haven't tested it a huge amount.
 
-![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/fc83070f-fa28-4b62-b7c0-ac6c5273f769)
+![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/8a05433b-7cd8-46ea-932f-9479fd88f5b6)
 
 ![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/e573365f-f47b-46eb-9e6f-6fc639ccaf21)
