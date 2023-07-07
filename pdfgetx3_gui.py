@@ -7,7 +7,7 @@
 # GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 import os
 import pdffunctions
 import matplotlib.pyplot as plt
@@ -73,30 +73,33 @@ class Ui_MainWindow(object):
 		self.centralwidget.setObjectName("centralwidget")
 		
 		self.filename = QtWidgets.QLineEdit(self.centralwidget)
-		self.filename.setGeometry(QtCore.QRect(20, 10, 300, 22))
+		self.filename.setGeometry(QtCore.QRect(20, 10, 350, 22))
 		self.filename.setObjectName("filename")
 		self.filename.setEnabled(False)
+		self.filename.setFont(QtGui.QFont('Calibiri',7))
 
 		self.bkgfilename = QtWidgets.QLineEdit(self.centralwidget)
-		self.bkgfilename.setGeometry(QtCore.QRect(20, 40, 300, 22))
+		self.bkgfilename.setGeometry(QtCore.QRect(20, 40, 350, 22))
 		self.bkgfilename.setObjectName("bkgfilename")
 		self.bkgfilename.setEnabled(False)
+		self.bkgfilename.setFont(QtGui.QFont('Calibiri',7))
 
 		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileLabel.setGeometry(QtCore.QRect(350, 10, 55, 16))
+		self.fileLabel.setGeometry(QtCore.QRect(400, 10, 55, 16))
 		self.fileLabel.setObjectName("fileLabel")
 		
 		self.fileButton = QtWidgets.QPushButton(self.centralwidget)
-		self.fileButton.setGeometry(QtCore.QRect(325, 10, 20, 20))
+		self.fileButton.setGeometry(QtCore.QRect(375, 10, 20, 20))
 		self.fileButton.setObjectName("fileButton")
 
 		self.bkgFileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgFileLabel.setGeometry(QtCore.QRect(350, 40, 101, 31))
+		self.bkgFileLabel.setGeometry(QtCore.QRect(400, 40, 101, 31))
 		self.bkgFileLabel.setObjectName("bkgFileLabel")
 
 		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
-		self.bkgfilebutton.setGeometry(QtCore.QRect(325, 40, 20, 20))
+		self.bkgfilebutton.setGeometry(QtCore.QRect(375, 40, 20, 20))
 		self.bkgfilebutton.setObjectName("bkgfilebutton")
+
 		self.compositionBox = QtWidgets.QLineEdit(self.centralwidget)
 		self.compositionBox.setGeometry(QtCore.QRect(20, 80, 141, 22))
 		self.compositionBox.setObjectName("compositionBox")
@@ -141,15 +144,15 @@ class Ui_MainWindow(object):
 		self.inputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
 
 		self.inputFormatLabel = QtWidgets.QLabel(self.centralwidget)
-		self.inputFormatLabel.setGeometry(QtCore.QRect(430, 10, 81, 16))
+		self.inputFormatLabel.setGeometry(QtCore.QRect(480, 10, 81, 16))
 		self.inputFormatLabel.setObjectName("inputFormatLabel")
 
 		self.QButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.QButton.setGeometry(QtCore.QRect(410, 30, 121, 20))
+		self.QButton.setGeometry(QtCore.QRect(460, 30, 121, 20))
 		self.QButton.setChecked(True)
 		self.QButton.setObjectName("QButton")
 		self.twothetaButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.twothetaButton.setGeometry(QtCore.QRect(480, 30, 121, 20))
+		self.twothetaButton.setGeometry(QtCore.QRect(530, 30, 121, 20))
 		self.twothetaButton.setObjectName("twothetaButton")
 		
 		self.inputFormatGroup.addButton(self.QButton)
