@@ -73,12 +73,30 @@ class Ui_MainWindow(object):
 		self.centralwidget.setObjectName("centralwidget")
 		
 		self.filename = QtWidgets.QLineEdit(self.centralwidget)
-		self.filename.setGeometry(QtCore.QRect(20, 10, 220, 22))
+		self.filename.setGeometry(QtCore.QRect(20, 10, 300, 22))
 		self.filename.setObjectName("filename")
+		self.filename.setEnabled(False)
+
 		self.bkgfilename = QtWidgets.QLineEdit(self.centralwidget)
-		self.bkgfilename.setGeometry(QtCore.QRect(20, 40, 220, 22))
+		self.bkgfilename.setGeometry(QtCore.QRect(20, 40, 300, 22))
 		self.bkgfilename.setObjectName("bkgfilename")
+		self.bkgfilename.setEnabled(False)
+
+		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
+		self.fileLabel.setGeometry(QtCore.QRect(350, 10, 55, 16))
+		self.fileLabel.setObjectName("fileLabel")
 		
+		self.fileButton = QtWidgets.QPushButton(self.centralwidget)
+		self.fileButton.setGeometry(QtCore.QRect(325, 10, 20, 20))
+		self.fileButton.setObjectName("fileButton")
+
+		self.bkgFileLabel = QtWidgets.QLabel(self.centralwidget)
+		self.bkgFileLabel.setGeometry(QtCore.QRect(350, 40, 101, 31))
+		self.bkgFileLabel.setObjectName("bkgFileLabel")
+
+		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
+		self.bkgfilebutton.setGeometry(QtCore.QRect(325, 40, 20, 20))
+		self.bkgfilebutton.setObjectName("bkgfilebutton")
 		self.compositionBox = QtWidgets.QLineEdit(self.centralwidget)
 		self.compositionBox.setGeometry(QtCore.QRect(20, 80, 141, 22))
 		self.compositionBox.setObjectName("compositionBox")
@@ -96,17 +114,17 @@ class Ui_MainWindow(object):
 		self.wavelengthLabel.setObjectName("wavelengthLabel")
 
 		self.filelistBox = QtWidgets.QComboBox(self.centralwidget)
-		self.filelistBox.setGeometry(QtCore.QRect(20, 150, 201, 22))
+		self.filelistBox.setGeometry(QtCore.QRect(20, 150, 280, 22))
 		self.filelistBox.setObjectName("filelistBox")
 		self.fileListLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileListLabel.setGeometry(QtCore.QRect(230, 150, 55, 16))
+		self.fileListLabel.setGeometry(QtCore.QRect(310, 150, 55, 16))
 		self.fileListLabel.setObjectName("fileListLabel")
 
 		self.bkgfilelistBox = QtWidgets.QComboBox(self.centralwidget)
-		self.bkgfilelistBox.setGeometry(QtCore.QRect(20, 220, 201, 22))
+		self.bkgfilelistBox.setGeometry(QtCore.QRect(20, 220, 280, 22))
 		self.bkgfilelistBox.setObjectName("bkgfilelistBox")
 		self.bkgfileListLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgfileListLabel.setGeometry(QtCore.QRect(230, 220, 55, 16))
+		self.bkgfileListLabel.setGeometry(QtCore.QRect(310, 220, 55, 16))
 		self.bkgfileListLabel.setObjectName("bkgfileListLabel")
 		self.bkgfileListLabel.setText('background\nfiles')
 		self.bkgfileListLabel.adjustSize()
@@ -121,13 +139,17 @@ class Ui_MainWindow(object):
 		self.bkgremoveButton.setText('remove bkg file')
 
 		self.inputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
-		
+
+		self.inputFormatLabel = QtWidgets.QLabel(self.centralwidget)
+		self.inputFormatLabel.setGeometry(QtCore.QRect(430, 10, 81, 16))
+		self.inputFormatLabel.setObjectName("inputFormatLabel")
+
 		self.QButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.QButton.setGeometry(QtCore.QRect(400, 30, 121, 20))
+		self.QButton.setGeometry(QtCore.QRect(410, 30, 121, 20))
 		self.QButton.setChecked(True)
 		self.QButton.setObjectName("QButton")
 		self.twothetaButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.twothetaButton.setGeometry(QtCore.QRect(470, 30, 121, 20))
+		self.twothetaButton.setGeometry(QtCore.QRect(480, 30, 121, 20))
 		self.twothetaButton.setObjectName("twothetaButton")
 		
 		self.inputFormatGroup.addButton(self.QButton)
@@ -331,38 +353,27 @@ class Ui_MainWindow(object):
 		self.regridGroup.addButton(self.linearRebin)
 		self.regridGroup.addButton(self.exponentialRebin)
 
-		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileLabel.setGeometry(QtCore.QRect(280, 10, 55, 16))
-		self.fileLabel.setObjectName("fileLabel")
-		self.bkgFileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgFileLabel.setGeometry(QtCore.QRect(280, 40, 101, 31))
-		self.bkgFileLabel.setObjectName("bkgFileLabel")
+		self.plotLabel = QtWidgets.QLabel(self.centralwidget)
+		self.plotLabel.setGeometry(QtCore.QRect(480, 110, 41, 16))
+		self.plotLabel.setObjectName("plotLabel")
 
-
-		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
-		self.bkgfilebutton.setGeometry(QtCore.QRect(250, 40, 20, 20))
-		self.bkgfilebutton.setObjectName("bkgfilebutton")
 		self.iqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.iqCheckBox.setGeometry(QtCore.QRect(330, 130, 81, 20))
+		self.iqCheckBox.setGeometry(QtCore.QRect(370, 130, 81, 20))
 		self.iqCheckBox.setObjectName("iqCheckBox")
 		self.sqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.sqCheckBox.setGeometry(QtCore.QRect(420, 130, 81, 20))
+		self.sqCheckBox.setGeometry(QtCore.QRect(440, 130, 81, 20))
 		self.sqCheckBox.setObjectName("sqCheckBox")
 		self.fqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.fqCheckBox.setGeometry(QtCore.QRect(520, 130, 81, 20))
+		self.fqCheckBox.setGeometry(QtCore.QRect(510, 130, 81, 20))
 		self.fqCheckBox.setObjectName("fqCheckBox")
 		self.saveButton = QtWidgets.QPushButton(self.centralwidget)
 		self.saveButton.setGeometry(QtCore.QRect(410, 470, 93, 28))
 		self.saveButton.setObjectName("saveButton")
-		self.plotLabel = QtWidgets.QLabel(self.centralwidget)
-		self.plotLabel.setGeometry(QtCore.QRect(430, 110, 41, 16))
-		self.plotLabel.setObjectName("plotLabel")
 		self.grCheckBox = QtWidgets.QCheckBox(self.centralwidget)
 		self.grCheckBox.setGeometry(QtCore.QRect(590, 130, 81, 20))
 		self.grCheckBox.setObjectName("grCheckBox")
-		self.fileButton = QtWidgets.QPushButton(self.centralwidget)
-		self.fileButton.setGeometry(QtCore.QRect(250, 10, 20, 20))
-		self.fileButton.setObjectName("fileButton")
+
+
 
 		self.rminBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
 		self.rminBox.setGeometry(QtCore.QRect(120, 290, 62, 22))
@@ -416,9 +427,7 @@ class Ui_MainWindow(object):
 		self.axisCheckBox.adjustSize()
 
 		
-		self.inputFormatLabel = QtWidgets.QLabel(self.centralwidget)
-		self.inputFormatLabel.setGeometry(QtCore.QRect(420, 10, 81, 16))
-		self.inputFormatLabel.setObjectName("inputFormatLabel")
+
 		MainWindow.setCentralWidget(self.centralwidget)
 		self.menubar = QtWidgets.QMenuBar(MainWindow)
 		self.menubar.setGeometry(QtCore.QRect(0, 0, 702, 26))
