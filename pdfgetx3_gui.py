@@ -77,12 +77,14 @@ class Ui_MainWindow(object):
 		self.filename.setObjectName("filename")
 		self.filename.setEnabled(False)
 		self.filename.setFont(QtGui.QFont('Calibiri',7))
+		self.filename.setStyleSheet("color: black;")
 
 		self.bkgfilename = QtWidgets.QLineEdit(self.centralwidget)
 		self.bkgfilename.setGeometry(QtCore.QRect(20, 40, 350, 22))
 		self.bkgfilename.setObjectName("bkgfilename")
 		self.bkgfilename.setEnabled(False)
 		self.bkgfilename.setFont(QtGui.QFont('Calibiri',7))
+		self.bkgfilename.setStyleSheet("color: black;")
 
 		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
 		self.fileLabel.setGeometry(QtCore.QRect(400, 10, 55, 16))
