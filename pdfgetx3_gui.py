@@ -16,7 +16,10 @@ import numpy as np
 import time
 from scipy.interpolate import interp1d
 matplotlib.rcParams.update({'font.size': 10})
+import ctypes
 
+myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) 
 
 def text_to_bool(text: str) -> bool:
 	if 'True' in text:
@@ -67,10 +70,13 @@ class Worker(QtCore.QThread):
 
 class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
+		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
 		MainWindow.setObjectName("PDFGetX3 GUI")
 		MainWindow.resize(702, 657)
 		self.centralwidget = QtWidgets.QWidget(MainWindow)
 		self.centralwidget.setObjectName("centralwidget")
+
+		MainWindow.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.png'))
 		
 		self.filename = QtWidgets.QLineEdit(self.centralwidget)
 		self.filename.setGeometry(QtCore.QRect(20, 10, 350, 22))
@@ -486,8 +492,7 @@ class Ui_MainWindow(object):
 
 
 		self.updateParamDct()
-		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
-		print()
+		
 		self.configFile = f'{self.configfilepath}/pdfConfigFile.dat'
 		self.fileListFile = f'{self.configfilepath}/pdfFileList.dat'
 		self.bkgfileListFile = f'{self.configfilepath}/pdfBkgFileList.dat'
