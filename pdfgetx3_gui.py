@@ -720,6 +720,7 @@ class Ui_MainWindow(object):
 						self.ax.plot(x,self.bkg, label = 'background',linewidth = linethickness)
 						self.ax.plot(x,y-self.bkg,label = 'difference',linewidth = linethickness)
 						self.ax.legend()
+					
 					self.ax.set_xlabel(plotDct[item][2])
 					self.ax.set_xlim(x[0],x[-1])
 					self.ax.set_ylabel(item)
@@ -736,7 +737,8 @@ class Ui_MainWindow(object):
 					self.ax[plotno].plot(self.qi,self.iq,label = 'total scattering',linewidth = linethickness)
 					self.ax[plotno].plot(self.qi,self.bkg,label = 'background',linewidth = linethickness)
 					self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference',linewidth = linethickness)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					if not self.plotlist[1] and not self.plotlist[2]:
+						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('Intensity')
 					self.ax[plotno].legend()
 					if holdAxes:
@@ -750,7 +752,8 @@ class Ui_MainWindow(object):
 					self.ax[plotno].plot(self.q0,self.sq0*((np.max(self.sq)-np.min(self.sq))/(np.max(self.sq0)-np.min(self.sq0))), 
 			  alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					if not self.plotlist[2]:
+						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
 					self.ax[plotno].set_ylabel('S(Q)')
 					
 					if holdAxes:
@@ -949,18 +952,28 @@ class Ui_MainWindow(object):
 		self.updateConfigFile()
 
 	def saveFile(self):
-		
-		pdffunctions.writeOutput(file=self.filename.text(),bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
+		if not self.plotted:
+			self.errorMessage('data not plotted/calculated yet, files not saved')
+			return
+		if len(self.plotlist[self.plotlist == True])==0:
+			print('no outputs selected to save')
+			self.errorMessage('no outputs selected to save')
+			return
+		try:
+			pdffunctions.writeOutput(file=self.filename.text(),bkgfile=self.bkgfilename.text(),bkgscale=self.bkgscalebox.value(),
 		composition = self.compositionBox.text(),qmin=self.qminbox.value(),qmax=self.qmaxbox.value(),qmaxinst=self.qmaxinstbox.value(),
 		rpoly=self.rpolybox.value(),dataformat = self.dataformat, rmin = self.rminBox.value(), rmax = self.rmaxBox.value(),
 		rstep = self.rstepBox.value(),wavelength = float(self.wavelengthBox.text()),iqcheck = self.iqcheck, sqcheck = self.sqcheck, 
 		fqcheck = self.fqcheck, grcheck = self.grcheck)
-		
-		
-		if len(self.plotlist[self.plotlist == True])==0:
-			print('no outputs selected to plot')
+		except PermissionError as p:
+			print(p)
+			print('file not saved')
+			self.errorMessage('permission error, file not saved')
 			return
-	
+		
+
+		self.errorMessage('')
+
 	def setQmax_lims(self):
 		self.qmaxbox.setMaximum(self.qmaxinstbox.value())
 		self.qmaxbox.setMinimum(self.qminbox.value()+1)
@@ -983,12 +996,25 @@ class Ui_MainWindow(object):
 			outfile = f'{basename}.iq'
 			iqsub = self.iq-self.bkg
 			print(f'writing {outfile}')
-			np.savetxt(outfile,np.array([self.qi,iqsub]).transpose())
+			try:
+				np.savetxt(outfile,np.array([self.qi,iqsub]).transpose())
+			except PermissionError as p:
+				print(p)
+				print('file not saved')
+				self.errorMessage('permission error, file not saved')
+				return
 			if self.twothetaButton.isChecked():
 				outfilexy = f'{basename}_bkgsub.xy'
 				print(f'writing {outfilexy}')
 				twotheta = 2*np.arcsin(float(self.wavelengthBox.text())*self.qi/(4*np.pi))*180/np.pi
-				np.savetxt(outfilexy,np.array([twotheta,iqsub]).transpose())
+				try:
+					np.savetxt(outfilexy,np.array([twotheta,iqsub]).transpose())
+				except PermissionError as p:
+					print(p)
+					print('file not saved')
+					self.errorMessage('permission error, file not saved')
+					return
+			self.errorMessage('')			
 	def updateQmin(self):
 		if self.running:
 			self.thread.qmin = self.qminbox.value()

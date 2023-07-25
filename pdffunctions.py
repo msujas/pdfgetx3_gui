@@ -1,9 +1,6 @@
 import os
-import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib
 
-matplotlib.rcParams.update({'font.size': 12})
 
 from diffpy.pdfgetx.pdfconfig import PDFConfig
 from diffpy.pdfgetx.pdfgetter import PDFGetter
@@ -64,43 +61,4 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck
 				print(f'writing {grfile}')
 			
 	
-	
-
-def plotOutput(fig,ax,qi,iq,bkg,q,sq,fq,rgr,iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True):
-
-	plotlist = np.array([iqcheck,sqcheck,fqcheck,grcheck])
-
-	
-	noplots = len(plotlist[plotlist==True])
-	
-	plotno = 0
-	for c,plot in enumerate(plotlist):
-		if plot:
-			if c == 0:
-
-				ax[plotno].plot(qi,iq,label = 'total scattering')
-
-				ax[plotno].plot(qi,bkg,label = 'background')
-				ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-				ax[plotno].set_ylabel('Intensity')
-				ax[plotno].legend()
-			elif c == 1:
-
-				ax[plotno].plot(q,sq)
-				ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-				ax[plotno].set_ylabel('S(Q)')
-			elif c == 2:
-
-				ax[plotno].plot(q,fq)
-				ax[plotno].set_xlabel('Q (Å$^{-1}$)')
-				ax[plotno].set_ylabel('F(Q)')
-			elif c == 3:
-
-				r,g = rgr[0],rgr[1]
-				ax[plotno].plot(r,g)
-				ax[plotno].set_xlabel('r (Å)')
-				ax[plotno].set_ylabel('G(r)')				
-			plotno += 1
-
-	plt.show(block = False)
 	
