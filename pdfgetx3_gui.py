@@ -6,7 +6,7 @@
 #
 # GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
-
+import diffpy.pdfgetx
 from PyQt5 import QtCore, QtWidgets, QtGui
 import os
 import pdffunctions
@@ -54,10 +54,15 @@ class Worker(QtCore.QThread):
 
 	def run(self):
 		while self.running:
-			qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
+			try:
+				qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
 			composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
 			rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
 			rstep = self.rstep,wavelength = self.wavelength, x = self.x, y = self.y)
+			except diffpy.pdfgetx.pdfconfig.PDFConfigError as e:
+				if 'Unknown chemical' in str(e):
+					self.outputs.emit(['invalid composition'])
+					return
 			self.repeat = False
 			self.outputs.emit([qi,iq,bkg,q,sq,fq,r, gr])
 
@@ -655,16 +660,26 @@ class Ui_MainWindow(object):
 		elif self.twothetaButton.isChecked():
 			self.dataformat = 'twotheta'
 		self.running = True
+
 		self.thread = Worker(file = inputfile, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
 		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength, x = xrebin,
 		y = yrebin)
-		plt.ion()
+		
 		self.thread.start()
 		self.thread.outputs.connect(self.plotUpdate)
 
 
+
 	def plotUpdate(self,outputs: list):
-		self.qi,self.iq,self.bkg,self.q,self.sq,self.fq,self.r, self.gr = outputs
+		if len(outputs) >1:
+			self.qi,self.iq,self.bkg,self.q,self.sq,self.fq,self.r, self.gr = outputs
+		elif len(outputs) == 1:
+			self.errorMessage(outputs[0])
+			del self.fig
+			del self.ax
+			return
+		plt.ion()
+		self.errorMessage('')
 		plotDct = {'I(Q)':[self.qi,self.iq,'Q (Å$^{-1}$)',self.plotlist[0]],
 					'S(Q)': [self.q,self.sq,'Q (Å$^{-1}$)',self.plotlist[1]],
 					'F(Q)': [self.q,self.fq,'Q (Å$^{-1}$)',self.plotlist[2]],
@@ -900,6 +915,7 @@ class Ui_MainWindow(object):
 		newfile = self.fileList[fileindex]
 		self.filename.setText(newfile)
 		self.updateConfigFile()
+	
 
 	def removeFile(self):
 		if len(self.fileList) > 1:
