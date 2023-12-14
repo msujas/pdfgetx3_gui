@@ -1,7 +1,5 @@
 import os
 import numpy as np
-
-
 from diffpy.pdfgetx.pdfconfig import PDFConfig
 from diffpy.pdfgetx.pdfgetter import PDFGetter
 
@@ -47,6 +45,7 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck
 		if n:
 			#if n == 0:
 			#	pdfcalc.writeOutput(filename = outfile+'.iq', outputtype = 'iq')
+
 			if n == 1:
 				sqfile = f'{outfile}.sq'
 				pdfcalc.writeOutput(filename = sqfile, outputtype = 'sq')
@@ -59,6 +58,7 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck
 				grfile = f'{outfile}.gr'
 				pdfcalc.writeOutput(filename = outfile+'.gr', outputtype = 'gr')
 				print(f'writing {grfile}')
+
 			
 	
 	

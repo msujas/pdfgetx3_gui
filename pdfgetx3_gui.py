@@ -26,7 +26,8 @@ def text_to_bool(text: str) -> bool:
 		return True
 	elif 'False' in text:
 		return False
-
+	else:
+		raise ValueError('text_to_bool function argument must be \'True\' or \'False\' as a string')
 
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
