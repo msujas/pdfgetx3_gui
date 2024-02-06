@@ -1,7 +1,7 @@
 import os
 import numpy as np
-from diffpy.pdfgetx.pdfconfig import PDFConfig
-from diffpy.pdfgetx.pdfgetter import PDFGetter
+from diffpy.pdfgetx import PDFConfig
+from diffpy.pdfgetx import PDFGetter
 
 
 

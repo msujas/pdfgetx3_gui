@@ -17,6 +17,7 @@ import time
 from scipy.interpolate import interp1d
 matplotlib.rcParams.update({'font.size': 10})
 import ctypes
+import sys
 
 myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) 
@@ -593,17 +594,17 @@ class Ui_MainWindow(object):
 		self.grCheckBox.setText(_translate("MainWindow", "G(r)"))
 		self.fileButton.setText(_translate("MainWindow", "..."))
 		self.fileButton.setShortcut(_translate("MainWindow", "Ctrl+O"))
-		self.QButton.setText(_translate("MainWindow", "Q (Å\u207B\u00B9)"))
-		self.twothetaButton.setText(_translate("MainWindow", "2theta (°)"))
+		self.QButton.setText(_translate("MainWindow", "Q (\u00C5\u207B\u00B9)"))
+		self.twothetaButton.setText(_translate("MainWindow", "2theta (\u00B0)"))
 		self.wavelengthLabel.setText(_translate("MainWindow", "wavelength"))
 		self.plotButton.setText(_translate("MainWindow", "Plot"))
 		self.inputFormatLabel.setText(_translate("MainWindow", "Input format"))
 		self.menuFile.setTitle(_translate("MainWindow", "File"))
 		self.actionOpen.setText(_translate("MainWindow", "Open"))
 		self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
-		self.rminLabel.setText(_translate("MainWindow", "rmin (Å)"))
-		self.rmaxLablel.setText(_translate("MainWindow", "rmax (Å)"))
-		self.rstepLabel.setText(_translate("MainWindow", "rstep (Å)"))
+		self.rminLabel.setText(_translate("MainWindow", "rmin (\u00C5)"))
+		self.rmaxLablel.setText(_translate("MainWindow", "rmax (\u00C5)"))
+		self.rstepLabel.setText(_translate("MainWindow", "rstep (\u00C5)"))
 
 	def startWorker(self):
 		self.plotted = False
@@ -1203,12 +1204,16 @@ class Ui_MainWindow(object):
 		self.errorMessageLabel.setText(message)
 		self.errorMessageLabel.adjustSize()
 
-if __name__ == "__main__":
-	import sys
+def main():
 	app = QtWidgets.QApplication(sys.argv)
 	MainWindow = QtWidgets.QMainWindow()
 	ui = Ui_MainWindow()
 	ui.setupUi(MainWindow)
 	MainWindow.show()
 	sys.exit(app.exec_())
+
+if __name__ == "__main__":
+	main()
+	
+
 
