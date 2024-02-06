@@ -682,10 +682,10 @@ class Ui_MainWindow(object):
 			return
 		plt.ion()
 		self.errorMessage('')
-		plotDct = {'I(Q)':[self.qi,self.iq,'Q (Å$^{-1}$)',self.plotlist[0]],
-					'S(Q)': [self.q,self.sq,'Q (Å$^{-1}$)',self.plotlist[1]],
-					'F(Q)': [self.q,self.fq,'Q (Å$^{-1}$)',self.plotlist[2]],
-					'G(r)': [self.r,self.gr,'r (Å)',self.plotlist[3]]}
+		plotDct = {'I(Q)':[self.qi,self.iq,'Q (\u00C5$^{-1}$)',self.plotlist[0]],
+					'S(Q)': [self.q,self.sq,'Q (\u00C5$^{-1}$)',self.plotlist[1]],
+					'F(Q)': [self.q,self.fq,'Q (\u00C5$^{-1}$)',self.plotlist[2]],
+					'G(r)': [self.r,self.gr,'r (\u00C5)',self.plotlist[3]]}
 		if not self.plotted:	
 			self.q0 = self.q
 			self.sq0 = self.sq
@@ -755,7 +755,7 @@ class Ui_MainWindow(object):
 					self.ax[plotno].plot(self.qi,self.bkg,label = 'background',linewidth = linethickness)
 					self.ax[plotno].plot(self.qi,self.iq-self.bkg,label = 'difference',linewidth = linethickness)
 					if not self.plotlist[1] and not self.plotlist[2]:
-						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+						self.ax[plotno].set_xlabel('Q (\u00C5$^{-1}$)')
 					self.ax[plotno].set_ylabel('Intensity')
 					self.ax[plotno].legend()
 					if holdAxes:
@@ -770,7 +770,7 @@ class Ui_MainWindow(object):
 			  alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.q,self.sq,linewidth = linethickness)
 					if not self.plotlist[2]:
-						self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+						self.ax[plotno].set_xlabel('Q (\u00C5$^{-1}$)')
 					self.ax[plotno].set_ylabel('S(Q)')
 					
 					if holdAxes:
@@ -784,7 +784,7 @@ class Ui_MainWindow(object):
 					self.ax[plotno].plot(self.q0,self.fq0*((np.max(self.fq)-np.min(self.fq))/(np.max(self.fq0)-np.min(self.fq0))), 
 			  alpha = tranparency0, color = 'gray',  markersize = 2)
 					self.ax[plotno].plot(self.q,self.fq,linewidth = linethickness, markersize = 2)
-					self.ax[plotno].set_xlabel('Q (Å$^{-1}$)')
+					self.ax[plotno].set_xlabel('Q (\u00C5$^{-1}$)')
 					self.ax[plotno].set_ylabel('F(Q)')
 					
 					
@@ -799,7 +799,7 @@ class Ui_MainWindow(object):
 					self.ax[plotno].plot(self.r0,self.gr0*((np.max(self.gr)-np.min(self.gr))/(np.max(self.gr0)-np.min(self.gr0))), 
 			  		alpha = tranparency0, color = 'gray')
 					self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
-					self.ax[plotno].set_xlabel('r (Å)')
+					self.ax[plotno].set_xlabel('r (\u00C5)')
 					self.ax[plotno].set_ylabel('G(r)')
 					
 					if holdAxes:
