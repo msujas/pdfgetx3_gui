@@ -18,16 +18,16 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 # Fields marked as "Optional" may be commented out.
 
 setup(
-    name="pdfgetx3GUI",  # Required
+    name="pdfgetx3gui",  # Required
 
     version="1.0",  # Required
 
     description="a GUI for running PDFgetX3",  # Optional
     scripts=['pdfgetx3_gui.py'],
-    package_dir={'.':'pdfgetx3_gui'},
+    package_dir={'.':'pdfgetx3gui'},
     entry_points = {'console_scripts': ['pdfgetx3gui = pdfgetx3_gui:main',]},
     #url="https://github.com/pypa/sampleproject",  # Optional
-    author="K. P. Marshall",  # Optional
+    author="Kenneth P. Marshall",  # Optional
     # This should be a valid email address corresponding to the author listed
     # above.
     author_email="kenneth.marshall@esrf.fr",  # Optional
@@ -35,6 +35,7 @@ setup(
     # When your source code is in a subdirectory under the project root, e.g.
     # `src/`, it is necessary to specify the `package_dir` argument.
 
-    packages= find_packages(),  # Required
+    packages= find_packages(includ = ['pdffunctions','pdfgetx3_gui']),  # Required
+    install_requires = ['PyQt5','numpy','scipy'],
     python_requires=">=3.7, <3.10", #I believe these are the requirements for diffpy.pdfgetx
 )
