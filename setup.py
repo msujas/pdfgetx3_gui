@@ -24,8 +24,8 @@ setup(
 
     description="a GUI for running PDFgetX3",  # Optional
     scripts=['pdfgetx3_gui.py'],
-    package_dir={ 'pdfgetx3gui':'.','pdfgetx3gui.icon':'icon','pdfgetx3gui.exampleFiles':'exampleFiles'},
-    entry_points = {'console_scripts': ['pdfgetx3gui = pdfgetx3gui.pdfgetx3_gui:main',]},
+    package_dir={ 'icon':'icon','exampleFiles':'exampleFiles'},
+    entry_points = {'console_scripts': ['pdfgetx3gui = pdfgetx3_gui:main',]},
     package_data={'icon':['icon/icon.png',],'exampleFiles':['exampleFiles/*',]},
     include_package_data=True,
     #url="https://github.com/pypa/sampleproject",  # Optional
@@ -37,7 +37,7 @@ setup(
     # When your source code is in a subdirectory under the project root, e.g.
     # `src/`, it is necessary to specify the `package_dir` argument.
     py_modules= ['pdffunctions','pdfgetx3_gui'],
-    packages=   ['pdfgetx3gui.icon','pdfgetx3gui.exampleFiles','pdfgetx3gui'],  # Required
+    packages=   ['icon','exampleFiles'],  # Required
     install_requires = ['PyQt5','numpy','scipy','matplotlib'],
     python_requires=">=3.7, <3.10", #I believe these are the requirements for diffpy.pdfgetx
 )
