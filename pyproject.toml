@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools >= 59.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdfgetx3gui"
+version = "1.1"
+requires-python = ">= 3.7"
+dependencies = ["scipy",
+                "numpy",
+                "matplotlib",
+                "PyQt5"]
+authors = [{name = "Kenneth P. Marshall", email = "kenneth.marshall@esrf.fr"}]
+maintainers = [{name = "Kenneth P. Marshall", email = "kenneth.marshall@esrf.fr"}]
+description = "scripts for running a GUI wrapper for PDFgetX3"
+readme = {file = "README.MD", content-type = "text/markdown"}
+keywords = ["PDF", "pdfgetx3", "gui"]
+classifiers = [
+"Development Status :: 4 - Beta",
+"License :: OSI Approved :: MIT License",
+"Programming Language :: Python :: 3.7",
+"Programming Language :: Python :: 3.8",
+"Programming Language :: Python :: 3.9"]
+
+[project.scripts]
+pdfgetx3gui = "pdfgetx3gui.pdfgetx3_gui:main"
+
+[tool.setuptools]
+include-package-data = true
+package-data = {"icon"=["icon.png"],"exampleFiles"=["*.xye"]}
+packages = ["pdfgetx3gui"]
+
+[project.urls]
+repository = "https://github.com/msujas/pdfgetx3_gui.git"
