@@ -20,7 +20,7 @@ exampleFiles/capillary.xy
 tmp
 regridTest.py
 pdfgetx3_gui.bat
-__pycache__
+*__pycache__*
 pyproject.toml
 pdfgetx3_gui.pyw
 pdfgetx3_gui.spec

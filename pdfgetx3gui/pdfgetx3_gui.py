@@ -9,7 +9,7 @@
 import diffpy.pdfgetx
 from PyQt5 import QtCore, QtWidgets, QtGui
 import os
-import pdffunctions
+from pdfgetx3gui import pdffunctions
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
