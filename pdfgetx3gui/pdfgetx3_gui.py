@@ -18,9 +18,11 @@ from scipy.interpolate import interp1d
 matplotlib.rcParams.update({'font.size': 10})
 import ctypes
 import sys
+import platform
 
-myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) 
+if platform.system() == 'Windows':
+	myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
+	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) 
 
 def text_to_bool(text: str) -> bool:
 	if 'True' in text:
@@ -78,7 +80,7 @@ class Worker(QtCore.QThread):
 class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
 		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
-		MainWindow.setObjectName("PDFGetX3 GUI")
+		MainWindow.setObjectName("PDFGetX3GUI")
 		MainWindow.resize(702, 657)
 		self.centralwidget = QtWidgets.QWidget(MainWindow)
 		self.centralwidget.setObjectName("centralwidget")
@@ -566,7 +568,7 @@ class Ui_MainWindow(object):
 		
 	def retranslateUi(self, MainWindow):
 		_translate = QtCore.QCoreApplication.translate
-		MainWindow.setWindowTitle(_translate("MainWindow", "PDFgetX3 GUI"))
+		MainWindow.setWindowTitle(_translate("MainWindow", "PDFgetX3GUI"))
 		#self.gudrunFormat.setText(_translate("MainWindow", "gudrun format"))
 		#self.pdfgetxFormat.setText(_translate("MainWindow", "pdfgetx format"))
 		self.fileLabel.setText(_translate("MainWindow", "file"))
