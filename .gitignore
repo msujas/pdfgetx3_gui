@@ -24,3 +24,7 @@ pdfgetx3_gui.bat
 pdfgetx3_gui.pyw
 pdfgetx3_gui.spec
 installer.cfg
+*.egg-info
+*.yml
+dist*
+setup.py

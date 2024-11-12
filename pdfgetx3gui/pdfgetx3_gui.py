@@ -19,6 +19,7 @@ matplotlib.rcParams.update({'font.size': 10})
 import ctypes
 import sys
 import platform
+import re
 
 if platform.system() == 'Windows':
 	myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
@@ -31,6 +32,25 @@ def text_to_bool(text: str) -> bool:
 		return False
 	else:
 		raise ValueError('text_to_bool function argument must be \'True\' or \'False\' as a string')
+
+def loadData(filename):
+	try:
+		x,y = np.loadtxt(filename,unpack=True,comments='#', usecols = (0,1))
+		return x,y
+	except ValueError:
+		print('couldn\'t read file with default # comments, trying by line')
+		pass
+	f = open(filename,'r')
+	lines = f.read().split('\n')
+	f.close()
+	for c,line in enumerate(lines):
+		if not line:
+			continue
+		if re.search('[0-9]',line.replace(' ','')[0].lower()):
+			x,y = np.loadtxt(filename,unpack=True, skiprows=c, usecols=(0,1))
+			return x,y
+	raise ValueError(f'couldn\'t find data in {filename}')	
+
 
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
@@ -168,15 +188,45 @@ class Ui_MainWindow(object):
 		self.QButton.setGeometry(QtCore.QRect(460, 30, 121, 20))
 		self.QButton.setChecked(True)
 		self.QButton.setObjectName("QButton")
+
 		self.twothetaButton = QtWidgets.QRadioButton(self.centralwidget)
 		self.twothetaButton.setGeometry(QtCore.QRect(530, 30, 121, 20))
 		self.twothetaButton.setObjectName("twothetaButton")
-		
+
 		self.inputFormatGroup.addButton(self.QButton)
 		self.inputFormatGroup.addButton(self.twothetaButton)
 
+		self.atomDensityBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.atomDensityBox.setGeometry(QtCore.QRect(460, 60, 61, 22))
+		self.atomDensityBox.setValue(0)
+		self.atomDensityBox.setObjectName("atomDensityBox")
+		self.atomDensityBox.setDecimals(3)
+		self.atomDensityBox.setSingleStep(0.001)
+		self.atomDensityBox.setKeyboardTracking(False)
+		self.atomDensityBox.valueChanged.connect(self.runUpdate)
+
+		self.atomDensityLabel = QtWidgets.QLabel(self.centralwidget)
+		self.atomDensityLabel.setGeometry(QtCore.QRect(530, 60, 61, 22))
+		self.atomDensityLabel.setText("atom density (\u00C5\u207B\u00B3)")
+		self.atomDensityLabel.adjustSize()
+
+		self.atomDensityExtent = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.atomDensityExtent.setGeometry(QtCore.QRect(460, 90, 61, 22))
+		self.atomDensityExtent.setValue(2)
+		self.atomDensityExtent.setObjectName("atomDensityExtent")
+		self.atomDensityExtent.setDecimals(1)
+		self.atomDensityExtent.setSingleStep(0.1)
+		self.atomDensityExtent.setKeyboardTracking(False)
+		self.atomDensityExtent.valueChanged.connect(self.runUpdate)
+
+		self.atomDensityExtentLabel = QtWidgets.QLabel(self.centralwidget)
+		self.atomDensityExtentLabel.setGeometry(QtCore.QRect(530, 90, 61, 22))
+		self.atomDensityExtentLabel.setText("density line extent")
+		self.atomDensityExtentLabel.adjustSize()
+
 		self.outputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
 		
+
 		
 		self.relLabel = QtWidgets.QLabel(self.centralwidget)
 		self.relLabel.setGeometry(QtCore.QRect(520, 170, 121, 16))
@@ -298,30 +348,61 @@ class Ui_MainWindow(object):
 		self.rpolyLabel.setGeometry(QtCore.QRect(371, 350, 81, 16))
 		self.rpolyLabel.setObjectName("rpolyLabel")
 
+		self.scaleBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.scaleBox.setGeometry(QtCore.QRect(450, 380, 61, 21))
+		self.scaleBox.setMaximum(100)
+		self.scaleBox.setMinimum(0.01)
+		self.scaleBox.setValue(1)
+		self.scaleBox.setObjectName("scaleBox")
+		self.scaleBox.setSingleStep(0.1)
+		self.scaleBox.setDecimals(2)
+		self.scaleBox.setKeyboardTracking(False)
+	
+		self.scalerel = QtWidgets.QDoubleSpinBox(self.centralwidget)
+		self.scalerel.setGeometry(QtCore.QRect(520, 380, 61, 21))
+		self.scalerel.setMaximum(5)
+		self.scalerel.setProperty("value", 0.1)
+		self.scalerel.setObjectName("scalerel")
+		self.scalerel.setSingleStep(0.01)
+		self.scalerel.setDecimals(2)
+		self.scalerel.setMaximum(1)
+		self.scalerel.setMinimum(-1)
+
+		self.scaleLabel = QtWidgets.QLabel(self.centralwidget)
+		self.scaleLabel.setGeometry(QtCore.QRect(371, 380, 81, 16))
+		self.scaleLabel.setObjectName("scaleLabel")
+		self.scaleLabel.setText("scale")
+
+		self.scaleLabel2 = QtWidgets.QLabel(self.centralwidget)
+		self.scaleLabel2.setGeometry(QtCore.QRect(590, 380, 81, 16))
+		self.scaleLabel2.setObjectName("scaleLabel2")
+		self.scaleLabel2.setText("(doesn't currently\ndo anything)")
+		self.scaleLabel2.adjustSize()
+
 		self.regridGroup = QtWidgets.QButtonGroup(self.centralwidget)
 
 		self.noRebin = QtWidgets.QRadioButton(self.centralwidget)
-		self.noRebin.setGeometry(QtCore.QRect(350, 380, 81, 16))
+		self.noRebin.setGeometry(QtCore.QRect(350, 410, 81, 16))
 		self.noRebin.setText('no rebin')
 		self.noRebin.setChecked(True)
 		self.noRebin.adjustSize()
 		self.noRebin.setObjectName('noRebin')
 		
 		self.linearRebin = QtWidgets.QRadioButton(self.centralwidget)
-		self.linearRebin.setGeometry(QtCore.QRect(420, 380, 81, 16))
+		self.linearRebin.setGeometry(QtCore.QRect(420, 410, 81, 16))
 		self.linearRebin.setText('linear rebin')
 		self.linearRebin.setChecked(False)
 		self.linearRebin.adjustSize()
 		self.linearRebin.setObjectName('linearRebin')
 
 		self.linearRebinLabel = QtWidgets.QLabel(self.centralwidget)
-		self.linearRebinLabel.setGeometry(QtCore.QRect(420, 400, 100, 18))
+		self.linearRebinLabel.setGeometry(QtCore.QRect(420, 430, 100, 18))
 		self.linearRebinLabel.setText('linear rebin\ngradient')
 		self.linearRebinLabel.adjustSize()
 		self.linearRebinLabel.setObjectName('linearRebinLabel')
 		
 		self.linearRebinGradientBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.linearRebinGradientBox.setGeometry(420,430, 50, 20)
+		self.linearRebinGradientBox.setGeometry(420,460, 50, 20)
 		self.linearRebinGradientBox.setObjectName('linearRebinGradientBox')
 		self.linearRebinGradientBox.setValue(1.1)
 		self.linearRebinGradientBox.setDecimals(2)
@@ -331,20 +412,20 @@ class Ui_MainWindow(object):
 		self.linearRebinGradientBox.setKeyboardTracking(False)
 
 		self.exponentialRebin = QtWidgets.QRadioButton(self.centralwidget)
-		self.exponentialRebin.setGeometry(QtCore.QRect(510, 380, 81, 16))
+		self.exponentialRebin.setGeometry(QtCore.QRect(510, 410, 81, 16))
 		self.exponentialRebin.setText('exponential rebin')
 		self.exponentialRebin.setChecked(False)
 		self.exponentialRebin.adjustSize()
 		self.exponentialRebin.setObjectName('exponentialRegrid')
 
 		self.exponentialRebinLabel = QtWidgets.QLabel(self.centralwidget)
-		self.exponentialRebinLabel.setGeometry(QtCore.QRect(510, 400, 100, 16))
+		self.exponentialRebinLabel.setGeometry(QtCore.QRect(510, 430, 100, 16))
 		self.exponentialRebinLabel.setText('exponential\nconstant')
 		self.exponentialRebinLabel.adjustSize()
 		self.exponentialRebinLabel.setObjectName('exponentialRebinLabel')
 
 		self.exponentialRebinConstant = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.exponentialRebinConstant.setGeometry(510,430, 70, 20)
+		self.exponentialRebinConstant.setGeometry(510,460, 70, 20)
 		self.exponentialRebinConstant.setObjectName('exponentialRebinConstant')
 		self.exponentialRebinConstant.setDecimals(5)
 		self.exponentialRebinConstant.setValue(0.0005)
@@ -386,9 +467,11 @@ class Ui_MainWindow(object):
 		self.fqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
 		self.fqCheckBox.setGeometry(QtCore.QRect(510, 130, 81, 20))
 		self.fqCheckBox.setObjectName("fqCheckBox")
+
 		self.saveButton = QtWidgets.QPushButton(self.centralwidget)
-		self.saveButton.setGeometry(QtCore.QRect(410, 470, 93, 28))
+		self.saveButton.setGeometry(QtCore.QRect(410, 500, 93, 28))
 		self.saveButton.setObjectName("saveButton")
+
 		self.grCheckBox = QtWidgets.QCheckBox(self.centralwidget)
 		self.grCheckBox.setGeometry(QtCore.QRect(590, 130, 81, 20))
 		self.grCheckBox.setObjectName("grCheckBox")
@@ -437,11 +520,11 @@ class Ui_MainWindow(object):
 		self.errorMessageLabel.setObjectName('errorMessageLabel')
 
 		self.plotButton = QtWidgets.QPushButton(self.centralwidget)
-		self.plotButton.setGeometry(QtCore.QRect(310, 470, 93, 28))
+		self.plotButton.setGeometry(QtCore.QRect(310, 500, 93, 28))
 		self.plotButton.setObjectName("plotButton")
 
 		self.axisCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.axisCheckBox.setGeometry(QtCore.QRect(310, 450, 100, 20))
+		self.axisCheckBox.setGeometry(QtCore.QRect(310, 480, 100, 20))
 		self.axisCheckBox.setObjectName("axisCheckBox")
 		self.axisCheckBox.setText("reset axis on update?")
 		self.axisCheckBox.adjustSize()
@@ -527,6 +610,7 @@ class Ui_MainWindow(object):
 		self.linearRebinGradientBox.valueChanged.connect(self.updatexy)
 		self.exponentialRebinConstant.valueChanged.connect(self.updatexy)
 		#self.exponentialRebinOrder.valueChanged.connect(self.updatexy)
+		self.scaleBox.valueChanged.connect(self.runUpdate)
 
 		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
 		self.rminBox.valueChanged.connect(self.updateConfigFile)
@@ -581,7 +665,7 @@ class Ui_MainWindow(object):
 		self.qmaxinstLabel.setText(_translate("MainWindow", "Qmax inst"))
 		
 		self.filename.setText(_translate('MainWindow',f"{self.configfilepath}/exampleFiles/LaB6_0p4mm_011_av10_monitor.xye"))
-		self.bkgfilename.setText(_translate('MainWindow',f"{self.configfilepath}/exampleFiles/0p4mm_capillary_018_av17_monitor.xye"))
+		#self.bkgfilename.setText(_translate('MainWindow',f"{self.configfilepath}/exampleFiles/0p4mm_capillary_018_av17_monitor.xye"))
 		self.fileListLabel.setText(_translate("MainWindow", "File list"))		
 		self.compositionBox.setText(_translate("MainWindow", "LaB6"))
 		self.wavelengthBox.setText(_translate("MainWindow", "0.270793"))
@@ -615,7 +699,8 @@ class Ui_MainWindow(object):
 			self.thread.stop()
 		
 		inputfile=self.filename.text()
-		x,y = np.loadtxt(inputfile,comments = '#', unpack = True, usecols=(0,1))
+		#x,y = np.loadtxt(inputfile,comments = '#', unpack = True, usecols=(0,1))
+		x,y = loadData(inputfile)
 		if self.noRebin.isChecked():
 			xrebin = None
 			yrebin = None
@@ -688,11 +773,12 @@ class Ui_MainWindow(object):
 					'S(Q)': [self.q,self.sq,'Q (\u00C5$^{-1}$)',self.plotlist[1]],
 					'F(Q)': [self.q,self.fq,'Q (\u00C5$^{-1}$)',self.plotlist[2]],
 					'G(r)': [self.r,self.gr,'r (\u00C5)',self.plotlist[3]]}
+		grscale = self.gr*self.scaleBox.value()
 		if not self.plotted:	
 			self.q0 = self.q
 			self.sq0 = self.sq
 			self.fq0 = self.fq
-			self.gr0 = self.gr
+			self.gr0 = grscale #self.gr
 			self.r0 = self.r
 		
 		holdAxes = self.plotted and self.noplots != 1 and not self.axisCheckBox.isChecked()
@@ -721,6 +807,7 @@ class Ui_MainWindow(object):
 
 		linethickness = 1
 		tranparency0 = 0.5
+		
 		if self.noplots == 1:
 			self.ax.cla()
 			for item in plotDct:
@@ -733,6 +820,13 @@ class Ui_MainWindow(object):
 						self.ax.plot(self.q0,self.fq0,alpha = tranparency0, color = 'gray')
 					elif item == 'G(r)':
 						self.ax.plot(self.r0,self.gr0,alpha = tranparency0, color = 'gray')
+						y = grscale
+						atomdensity = self.atomDensityBox.value()
+						densityExtent = self.atomDensityExtent.value()
+						atomr = np.array([0,densityExtent])
+						atomDensityPlot = -4*np.pi*atomdensity*atomr
+						self.ax.plot(atomr, atomDensityPlot, '--', color = 'tab:orange')
+
 						
 					self.ax.plot(x,y,label = 'measured',linewidth = linethickness)
 					if item == 'I(Q)':
@@ -800,9 +894,15 @@ class Ui_MainWindow(object):
 				elif c == 3:
 					self.ax[plotno].plot(self.r0,self.gr0*((np.max(self.gr)-np.min(self.gr))/(np.max(self.gr0)-np.min(self.gr0))), 
 			  		alpha = tranparency0, color = 'gray')
-					self.ax[plotno].plot(self.r,self.gr,linewidth = linethickness)
+					
+					self.ax[plotno].plot(self.r,grscale,linewidth = linethickness)
 					self.ax[plotno].set_xlabel('r (\u00C5)')
 					self.ax[plotno].set_ylabel('G(r)')
+					atomdensity = self.atomDensityBox.value()
+					densityExtent = self.atomDensityExtent.value()
+					atomr = np.array([0,densityExtent])
+					atomDensityPlot = -4*np.pi*atomdensity*atomr
+					self.ax[plotno].plot(atomr, atomDensityPlot, '--')
 					
 					if holdAxes:
 						self.ax[plotno].set_xlim(*xlims['gr'])
@@ -1082,7 +1182,8 @@ class Ui_MainWindow(object):
 		
 		if self.running and not self.noRebin.isChecked():
 
-			x,y = np.loadtxt(self.filename.text(),unpack=True,usecols=(0,1),comments='#')
+			#x,y = np.loadtxt(self.filename.text(),unpack=True,usecols=(0,1),comments='#')
+			x,y = loadData(self.filename.text())
 			self.thread.x, self.thread.y = self.qRebin(x,y)
 			newbkgfile = self.updatebkgfile()
 			self.thread.bkgfile = newbkgfile
@@ -1091,7 +1192,8 @@ class Ui_MainWindow(object):
 	def updatebkgfile(self):
 		bkgfile = self.bkgfilename.text()
 		if not self.noRebin.isChecked():
-			xback, yback = np.loadtxt(bkgfile,comments = '#', unpack = True, usecols = (0,1))
+			#xback, yback = np.loadtxt(bkgfile,comments = '#', unpack = True, usecols = (0,1))
+			xback, yback = loadData(bkgfile)
 			xbrebin,ybrebin = self.qRebin(xback,yback)
 			if not os.path.exists('tmp/'):
 				os.makedirs('tmp/')
@@ -1119,6 +1221,9 @@ class Ui_MainWindow(object):
 		f = open(self.configFile,'w')
 		f.write(string)
 		f.close()
+	def runUpdate(self):
+		if self.running:
+			self.thread.repeat = True
 
 	def readConfigFile(self):
 		f = open(self.configFile,'r')
@@ -1205,6 +1310,7 @@ class Ui_MainWindow(object):
 	def errorMessage(self,message):
 		self.errorMessageLabel.setText(message)
 		self.errorMessageLabel.adjustSize()
+
 
 def main():
 	app = QtWidgets.QApplication(sys.argv)
