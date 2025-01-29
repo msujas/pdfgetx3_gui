@@ -914,11 +914,13 @@ class Ui_MainWindow(object):
 
 		plt.subplots_adjust(top = 0.99, bottom = 0.07, right = 0.99, left = 0.07, 
             hspace = 0.2, wspace = 0)
-		plt.show()
+		if not self.plotted:
+			self.fig.show()
 		self.plotted = True
-		plt.pause(0.01)
+		#plt.pause(0.01)
+		time.sleep(0.01)
 
-		self.centralwidget.activateWindow()
+		#self.centralwidget.activateWindow()
 
 	def qRebin(self, q, intensity):
 		if self.noRebin.isChecked():
