@@ -6,6 +6,9 @@ startup.txt
 gudrun.zip
 test.py
 exampleFiles/Xray*
+exampleFiles/fq
+exampleFiles/gr
+exampleFiles/sq
 .ipynb_checkpoints*
 exampleFiles/.ipynb_checkpoints*
 pdfFileList.dat

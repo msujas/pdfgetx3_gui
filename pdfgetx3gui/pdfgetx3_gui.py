@@ -20,6 +20,7 @@ import ctypes
 import sys
 import platform
 import re
+from glob import glob
 
 if platform.system() == 'Windows':
 	myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
@@ -54,8 +55,6 @@ def loadData(filename):
 
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
-
-
 	def __init__(self,file: str,bkgfile: str,bkgscale: float,composition: str, dataformat: str,qmin: float,qmax: float,qmaxinst: float, 
 	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float, x, y):
 		super(Worker,self).__init__()
@@ -96,6 +95,43 @@ class Worker(QtCore.QThread):
 		return
 	def stop(self):
 		self.running = False
+
+class SaveDirWorker(QtCore.QThread):
+	outputs = QtCore.pyqtSignal(bool)
+	def __init__(self, filename, bkgfile,bkgscale: float,composition: str,qmin: float,qmax: float,qmaxinst: float,rpoly: float,
+dataformat: str,rmin: float, rmax: float, rstep: float,wavelength: float):
+		super(SaveDirWorker,self).__init__()
+		self.filename = filename
+		self.bkgfile = bkgfile
+		self.bkgscale = bkgscale
+		self.composition = composition
+		self.qmin = qmin
+		self.qmax = qmax
+		self.qmaxinst = qmaxinst
+		self.rpoly = rpoly
+		self.dataformat = dataformat
+		self.rmin = rmin
+		self.rmax = rmax
+		self.rstep = rstep
+		self.wavelength = wavelength
+	def run(self):
+		directory = os.path.dirname(self.filename)
+		extension = os.path.splitext(self.filename)[-1]
+		files = glob(f'{directory}/*{extension}')
+		os.makedirs(f'{directory}/gr/', exist_ok=True)
+		os.makedirs(f'{directory}/fq/', exist_ok=True)
+		os.makedirs(f'{directory}/sq/', exist_ok=True)
+		self.running = True
+		print(f'running in {directory}')
+		for file in files:
+			if not self.running:
+				break
+			pdffunctions.writeOutput(file,self.bkgfile, self.bkgscale,self.composition,self.qmin,self.qmax,
+							self.qmaxinst,self.rpoly, self.dataformat,self.rmin,self.rmax,self.rstep, self.wavelength, makedirs=False)
+		self.outputs.emit(True)
+	def stop(self):
+		self.running = False
+
 
 class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
@@ -472,6 +508,18 @@ class Ui_MainWindow(object):
 		self.saveButton.setGeometry(QtCore.QRect(410, 500, 93, 28))
 		self.saveButton.setObjectName("saveButton")
 
+		self.saveDirButton = QtWidgets.QPushButton(self.centralwidget)
+		self.saveDirButton.setGeometry(QtCore.QRect(310, 530, 93, 28))
+		self.saveDirButton.setObjectName("saveDirButton")
+		self.saveDirButton.setText('run directory')
+
+		self.stopSave = QtWidgets.QPushButton(self.centralwidget)
+		self.stopSave.setGeometry(QtCore.QRect(410, 530, 93, 28))
+		self.stopSave.setObjectName("stopSave")
+		self.stopSave.setText('stop saving')
+		self.stopSave.setEnabled(False)
+
+
 		self.grCheckBox = QtWidgets.QCheckBox(self.centralwidget)
 		self.grCheckBox.setGeometry(QtCore.QRect(590, 130, 81, 20))
 		self.grCheckBox.setObjectName("grCheckBox")
@@ -648,6 +696,8 @@ class Ui_MainWindow(object):
 		self.qmaxinstrel.valueChanged.connect(lambda: self.changeStep(self.qmaxinstbox))
 		self.rpolyrel.setKeyboardTracking(False)
 		self.rpolyrel.valueChanged.connect(lambda: self.changeStep(self.rpolybox))
+		self.saveDirButton.clicked.connect(self.saveAll)
+		self.stopSave.clicked.connect(self.stop_worker2)
 
 		
 	def retranslateUi(self, MainWindow):
@@ -756,6 +806,7 @@ class Ui_MainWindow(object):
 		
 		self.thread.start()
 		self.thread.outputs.connect(self.plotUpdate)
+		
 
 
 
@@ -958,6 +1009,36 @@ class Ui_MainWindow(object):
 
 		return q[1:newqmaxindex], newintRG
 	
+	def saveAll(self):
+		inputfile = self.filename.text()
+		bkgfile= self.updatebkgfile()
+		bkgscale=self.bkgscalebox.value()
+		composition = self.compositionBox.text()
+		qmin=self.qminbox.value()
+		qmax=self.qmaxbox.value()
+		qmaxinst=self.qmaxinstbox.value()
+		if self.QButton.isChecked():
+			dataformat = 'QA'
+		elif self.twothetaButton.isChecked():
+			dataformat = 'twotheta'
+
+		rpoly=self.rpolybox.value()
+		rmin = self.rminBox.value()
+		rmax = self.rmaxBox.value()
+		rstep = self.rstepBox.value()
+		wavelength = float(self.wavelengthBox.text())
+		#self.saveDirButton.setEnabled(False)
+		self.thread2 = SaveDirWorker(inputfile,bkgfile,bkgscale,composition,qmin,qmax,qmaxinst,rpoly,dataformat,rmin,rmax, rstep, wavelength)
+		self.thread2.start()
+		self.saveDirButton.setEnabled(False)
+		self.stopSave.setEnabled(True)
+		self.thread2.outputs.connect(self.swapSaveButtons)
+
+	
+	def swapSaveButtons(self, setting):
+		self.saveDirButton.setEnabled(setting)
+		self.stopSave.setEnabled(not setting)
+
 	def twothetaoffset(self,x):
 		ttho = 0
 		if ttho < 10**(-5) or self.QButton.isChecked():
@@ -1111,6 +1192,11 @@ class Ui_MainWindow(object):
 
 	def stop_worker(self):
 		self.thread.stop()
+	
+	def stop_worker2(self):
+		self.thread2.stop()
+		self.saveDirButton.setEnabled(True)
+		self.stopSave.setEnabled(False)
 
 	def write_iq_file(self):
 		if self.iqcheck:
