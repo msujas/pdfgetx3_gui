@@ -8,6 +8,7 @@ Selected measurement files and background files are put into lists so they can b
 There's a rebinning option to reduce high Q noise. It's not so efficient, so could probably be faster.
 
 
-![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/8a05433b-7cd8-46ea-932f-9479fd88f5b6)
+![image](https://github.com/user-attachments/assets/40c74064-bf7c-49f9-a22f-c7558a570e6c)
 
-![image](https://github.com/msujas/pdfgetx3_gui/assets/79653376/e573365f-f47b-46eb-9e6f-6fc639ccaf21)
+![image](https://github.com/user-attachments/assets/4a24f026-434b-45b5-a108-6493cbdf323c)
+
