@@ -32,3 +32,4 @@ installer.cfg
 dist*
 setup.py
 .vscode
+build

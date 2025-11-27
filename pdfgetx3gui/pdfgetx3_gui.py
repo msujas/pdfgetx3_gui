@@ -6,7 +6,6 @@
 #
 # GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
-import diffpy.pdfgetx
 from PyQt5 import QtCore, QtWidgets, QtGui
 import os
 from pdfgetx3gui import pdffunctions
@@ -16,9 +15,7 @@ import numpy as np
 import time
 from scipy.interpolate import interp1d
 matplotlib.rcParams.update({'font.size': 10})
-import ctypes
 import sys
-import platform
 import re
 from glob import glob
 from .pdfworker import Worker, SaveDirWorker
@@ -54,7 +51,6 @@ class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
 		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
 		MainWindow.setObjectName("PDFGetX3GUI")
-		#MainWindow.resize(702, 657)
 		self.centralwidget = QtWidgets.QWidget(MainWindow)
 		self.centralwidget.setObjectName("centralwidget")
 
@@ -68,12 +64,16 @@ class Ui_MainWindow(object):
 		self.filename.setFont(QtGui.QFont('Calibiri',7))
 		self.filename.setStyleSheet("color: black;")
 		self.grid.addWidget(self.filename, 0,0, 1, 3)
+		self.filename.setText(f"{self.configfilepath}/exampleFiles/LaB6_0p4mm_011_av10_monitor.xye")
+		
+
 
 		self.bkgfilename = QtWidgets.QLineEdit()
 		self.bkgfilename.setObjectName("bkgfilename")
 		self.bkgfilename.setEnabled(False)
 		self.bkgfilename.setFont(QtGui.QFont('Calibiri',7))
 		self.bkgfilename.setStyleSheet("color: black;")
+		self.bkgfilename.setText(f"{self.configfilepath}/exampleFiles/0p4mm_capillary_018_av17_monitor.xye")
 		self.grid.addWidget(self.bkgfilename, 1,0, 1, 3)
 
 		self.fileLabel = QtWidgets.QLabel()
@@ -660,8 +660,6 @@ class Ui_MainWindow(object):
 		self.QmaxLabel.setText(_translate("MainWindow", "Qmax"))
 		self.qmaxinstLabel.setText(_translate("MainWindow", "Qmax inst"))
 		
-		self.filename.setText(_translate('MainWindow',f"{self.configfilepath}/exampleFiles/LaB6_0p4mm_011_av10_monitor.xye"))
-		#self.bkgfilename.setText(_translate('MainWindow',f"{self.configfilepath}/exampleFiles/0p4mm_capillary_018_av17_monitor.xye"))
 		self.fileListLabel.setText(_translate("MainWindow", "File list"))		
 		self.compositionBox.setText(_translate("MainWindow", "LaB6"))
 		self.wavelengthBox.setText(_translate("MainWindow", "0.270793"))
