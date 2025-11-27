@@ -21,6 +21,7 @@ import sys
 import platform
 import re
 from glob import glob
+from .pdfworker import Worker, SaveDirWorker
 
 if platform.system() == 'Windows':
 	myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
@@ -53,325 +54,255 @@ def loadData(filename):
 	raise ValueError(f'couldn\'t find data in {filename}')	
 
 
-class Worker(QtCore.QThread):
-	outputs = QtCore.pyqtSignal(list)
-	def __init__(self,file: str,bkgfile: str,bkgscale: float,composition: str, dataformat: str,qmin: float,qmax: float,qmaxinst: float, 
-	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float, x, y):
-		super(Worker,self).__init__()
-		self.file = file
-		self.bkgfile = bkgfile
-		self.bkgscale = bkgscale
-		self.composition = composition
-		self.dataformat = dataformat
-		self.rpoly = rpoly
-		self.qmin = qmin
-		self.qmax = qmax
-		self.qmaxinst = qmaxinst
-		self.rmin = rmin
-		self.rmax = rmax
-		self.rstep = rstep
-		self.wavelength = wavelength
-		self.running = True
-		self.x = x
-		self.y = y
-
-	def run(self):
-		while self.running:
-			try:
-				qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
-			composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
-			rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
-			rstep = self.rstep,wavelength = self.wavelength, x = self.x, y = self.y)
-			except diffpy.pdfgetx.pdfconfig.PDFConfigError as e:
-				if 'Unknown chemical' in str(e):
-					self.outputs.emit(['invalid composition'])
-					return
-			self.repeat = False
-			self.outputs.emit([qi,iq,bkg,q,sq,fq,r, gr])
-
-
-			while self.repeat == False:
-				time.sleep(0.01)
-		return
-	def stop(self):
-		self.running = False
-
-class SaveDirWorker(QtCore.QThread):
-	outputs = QtCore.pyqtSignal(bool)
-	def __init__(self, filename, bkgfile,bkgscale: float,composition: str,qmin: float,qmax: float,qmaxinst: float,rpoly: float,
-dataformat: str,rmin: float, rmax: float, rstep: float,wavelength: float):
-		super(SaveDirWorker,self).__init__()
-		self.filename = filename
-		self.bkgfile = bkgfile
-		self.bkgscale = bkgscale
-		self.composition = composition
-		self.qmin = qmin
-		self.qmax = qmax
-		self.qmaxinst = qmaxinst
-		self.rpoly = rpoly
-		self.dataformat = dataformat
-		self.rmin = rmin
-		self.rmax = rmax
-		self.rstep = rstep
-		self.wavelength = wavelength
-	def run(self):
-		directory = os.path.dirname(self.filename)
-		extension = os.path.splitext(self.filename)[-1]
-		files = glob(f'{directory}/*{extension}')
-		os.makedirs(f'{directory}/gr/', exist_ok=True)
-		os.makedirs(f'{directory}/fq/', exist_ok=True)
-		os.makedirs(f'{directory}/sq/', exist_ok=True)
-		self.running = True
-		print(f'running in {directory}')
-		for file in files:
-			if not self.running:
-				break
-			pdffunctions.writeOutput(file,self.bkgfile, self.bkgscale,self.composition,self.qmin,self.qmax,
-							self.qmaxinst,self.rpoly, self.dataformat,self.rmin,self.rmax,self.rstep, self.wavelength, makedirs=False)
-		self.outputs.emit(True)
-	def stop(self):
-		self.running = False
-
-
 class Ui_MainWindow(object):
 	def setupUi(self, MainWindow):
 		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
 		MainWindow.setObjectName("PDFGetX3GUI")
-		MainWindow.resize(702, 657)
+		#MainWindow.resize(702, 657)
 		self.centralwidget = QtWidgets.QWidget(MainWindow)
 		self.centralwidget.setObjectName("centralwidget")
 
 		MainWindow.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.png'))
 		
-		self.filename = QtWidgets.QLineEdit(self.centralwidget)
-		self.filename.setGeometry(QtCore.QRect(20, 10, 350, 22))
+		self.grid = QtWidgets.QGridLayout()
+
+		self.filename = QtWidgets.QLineEdit()
 		self.filename.setObjectName("filename")
 		self.filename.setEnabled(False)
 		self.filename.setFont(QtGui.QFont('Calibiri',7))
 		self.filename.setStyleSheet("color: black;")
+		self.grid.addWidget(self.filename, 0,0, 1, 3)
 
-		self.bkgfilename = QtWidgets.QLineEdit(self.centralwidget)
-		self.bkgfilename.setGeometry(QtCore.QRect(20, 40, 350, 22))
+		self.bkgfilename = QtWidgets.QLineEdit()
 		self.bkgfilename.setObjectName("bkgfilename")
 		self.bkgfilename.setEnabled(False)
 		self.bkgfilename.setFont(QtGui.QFont('Calibiri',7))
 		self.bkgfilename.setStyleSheet("color: black;")
+		self.grid.addWidget(self.bkgfilename, 1,0, 1, 3)
 
-		self.fileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileLabel.setGeometry(QtCore.QRect(400, 10, 55, 16))
+		self.fileLabel = QtWidgets.QLabel()
 		self.fileLabel.setObjectName("fileLabel")
+		self.grid.addWidget(self.fileLabel, 0, 4)
 		
-		self.fileButton = QtWidgets.QPushButton(self.centralwidget)
-		self.fileButton.setGeometry(QtCore.QRect(375, 10, 20, 20))
+		self.fileButton = QtWidgets.QPushButton()
 		self.fileButton.setObjectName("fileButton")
+		self.fileButton.setMaximumWidth(25)
+		self.grid.addWidget(self.fileButton, 0,3)
 
-		self.bkgFileLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgFileLabel.setGeometry(QtCore.QRect(400, 40, 101, 31))
+		self.bkgFileLabel = QtWidgets.QLabel()
 		self.bkgFileLabel.setObjectName("bkgFileLabel")
+		self.bkgFileLabel.setText("background\nfile")
+		self.grid.addWidget(self.bkgFileLabel,1, 4)
 
-		self.bkgfilebutton = QtWidgets.QPushButton(self.centralwidget)
-		self.bkgfilebutton.setGeometry(QtCore.QRect(375, 40, 20, 20))
+		self.bkgfilebutton = QtWidgets.QPushButton()
 		self.bkgfilebutton.setObjectName("bkgfilebutton")
+		self.bkgfilebutton.setMaximumWidth(25)
+		self.grid.addWidget(self.bkgfilebutton, 1,3)
 
-		self.compositionBox = QtWidgets.QLineEdit(self.centralwidget)
-		self.compositionBox.setGeometry(QtCore.QRect(20, 80, 141, 22))
+		self.compositionBox = QtWidgets.QLineEdit()
 		self.compositionBox.setObjectName("compositionBox")
+		self.grid.addWidget(self.compositionBox, 2, 0)
 
-
-		self.compositionLabel = QtWidgets.QLabel(self.centralwidget)
-		self.compositionLabel.setGeometry(QtCore.QRect(170, 80, 81, 16))
+		self.compositionLabel = QtWidgets.QLabel()
 		self.compositionLabel.setObjectName("compositionLabel")
+		self.grid.addWidget(self.compositionLabel, 2, 1)
 		
-		self.wavelengthBox = QtWidgets.QLineEdit(self.centralwidget)
-		self.wavelengthBox.setGeometry(QtCore.QRect(20, 110, 141, 22))
+		self.wavelengthBox = QtWidgets.QLineEdit()
 		self.wavelengthBox.setObjectName("wavelengthBox")
-		self.wavelengthLabel = QtWidgets.QLabel(self.centralwidget)
-		self.wavelengthLabel.setGeometry(QtCore.QRect(170, 110, 81, 16))
+		self.grid.addWidget(self.wavelengthBox, 3, 0)
+
+		self.wavelengthLabel = QtWidgets.QLabel()
 		self.wavelengthLabel.setObjectName("wavelengthLabel")
+		self.grid.addWidget(self.wavelengthLabel, 3, 1)
 
-		self.filelistBox = QtWidgets.QComboBox(self.centralwidget)
-		self.filelistBox.setGeometry(QtCore.QRect(20, 150, 280, 22))
+		self.filelistBox = QtWidgets.QComboBox()
 		self.filelistBox.setObjectName("filelistBox")
-		self.fileListLabel = QtWidgets.QLabel(self.centralwidget)
-		self.fileListLabel.setGeometry(QtCore.QRect(310, 150, 55, 16))
-		self.fileListLabel.setObjectName("fileListLabel")
+		self.grid.addWidget(self.filelistBox, 4,0,1,2)
 
-		self.bkgfilelistBox = QtWidgets.QComboBox(self.centralwidget)
-		self.bkgfilelistBox.setGeometry(QtCore.QRect(20, 220, 280, 22))
+		self.fileListLabel = QtWidgets.QLabel()
+		self.fileListLabel.setObjectName("fileListLabel")
+		self.grid.addWidget(self.fileListLabel, 4,2)
+
+		self.bkgfilelistBox = QtWidgets.QComboBox()
 		self.bkgfilelistBox.setObjectName("bkgfilelistBox")
-		self.bkgfileListLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgfileListLabel.setGeometry(QtCore.QRect(310, 220, 55, 16))
+		self.grid.addWidget(self.bkgfilelistBox, 6,0,1,2)
+
+		self.bkgfileListLabel = QtWidgets.QLabel()
 		self.bkgfileListLabel.setObjectName("bkgfileListLabel")
 		self.bkgfileListLabel.setText('background\nfiles')
 		self.bkgfileListLabel.adjustSize()
+		self.grid.addWidget(self.bkgfileListLabel, 6,2)
 
-		self.removeButton = QtWidgets.QPushButton(self.centralwidget)
-		self.removeButton.setGeometry(QtCore.QRect(20, 180, 111, 28))
+		self.removeButton = QtWidgets.QPushButton()
 		self.removeButton.setObjectName("removeButton")
+		self.grid.addWidget(self.removeButton, 5, 0)
 
-		self.bkgremoveButton = QtWidgets.QPushButton(self.centralwidget)
-		self.bkgremoveButton.setGeometry(QtCore.QRect(20, 250, 111, 28))
+		self.bkgremoveButton = QtWidgets.QPushButton()
 		self.bkgremoveButton.setObjectName("bkgremoveButton")
 		self.bkgremoveButton.setText('remove bkg file')
+		self.grid.addWidget(self.bkgremoveButton, 7, 0)
 
-		self.inputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
-
-		self.inputFormatLabel = QtWidgets.QLabel(self.centralwidget)
-		self.inputFormatLabel.setGeometry(QtCore.QRect(480, 10, 81, 16))
+		self.inputFormatGroup = QtWidgets.QButtonGroup()
+		self.inputFormatLabel = QtWidgets.QLabel()
 		self.inputFormatLabel.setObjectName("inputFormatLabel")
+		self.grid.addWidget(self.inputFormatLabel, 0,5, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
-		self.QButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.QButton.setGeometry(QtCore.QRect(460, 30, 121, 20))
+		self.formatgrid = QtWidgets.QHBoxLayout()
+		self.QButton = QtWidgets.QRadioButton()
 		self.QButton.setChecked(True)
 		self.QButton.setObjectName("QButton")
+		
+		self.formatgrid.addWidget(self.QButton)
 
-		self.twothetaButton = QtWidgets.QRadioButton(self.centralwidget)
-		self.twothetaButton.setGeometry(QtCore.QRect(530, 30, 121, 20))
+		self.twothetaButton = QtWidgets.QRadioButton()
 		self.twothetaButton.setObjectName("twothetaButton")
+		self.formatgrid.addWidget(self.twothetaButton)
 
 		self.inputFormatGroup.addButton(self.QButton)
 		self.inputFormatGroup.addButton(self.twothetaButton)
+		self.grid.addLayout(self.formatgrid, 1,5)
 
-		self.atomDensityBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.atomDensityBox.setGeometry(QtCore.QRect(460, 60, 61, 22))
+		self.atomDensityBox = QtWidgets.QDoubleSpinBox()
 		self.atomDensityBox.setValue(0)
 		self.atomDensityBox.setObjectName("atomDensityBox")
 		self.atomDensityBox.setDecimals(3)
 		self.atomDensityBox.setSingleStep(0.001)
 		self.atomDensityBox.setKeyboardTracking(False)
 		self.atomDensityBox.valueChanged.connect(self.runUpdate)
+		self.grid.addWidget(self.atomDensityBox, 2, 5)
 
-		self.atomDensityLabel = QtWidgets.QLabel(self.centralwidget)
-		self.atomDensityLabel.setGeometry(QtCore.QRect(530, 60, 61, 22))
+		self.atomDensityLabel = QtWidgets.QLabel()
 		self.atomDensityLabel.setText("atom density (\u00C5\u207B\u00B3)")
 		self.atomDensityLabel.adjustSize()
+		self.grid.addWidget(self.atomDensityLabel, 2, 6)
 
-		self.atomDensityExtent = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.atomDensityExtent.setGeometry(QtCore.QRect(460, 90, 61, 22))
+		self.atomDensityExtent = QtWidgets.QDoubleSpinBox()
 		self.atomDensityExtent.setValue(2)
 		self.atomDensityExtent.setObjectName("atomDensityExtent")
 		self.atomDensityExtent.setDecimals(1)
 		self.atomDensityExtent.setSingleStep(0.1)
 		self.atomDensityExtent.setKeyboardTracking(False)
 		self.atomDensityExtent.valueChanged.connect(self.runUpdate)
+		self.grid.addWidget(self.atomDensityExtent, 3, 5)
 
-		self.atomDensityExtentLabel = QtWidgets.QLabel(self.centralwidget)
-		self.atomDensityExtentLabel.setGeometry(QtCore.QRect(530, 90, 61, 22))
+		self.atomDensityExtentLabel = QtWidgets.QLabel()
 		self.atomDensityExtentLabel.setText("density line extent")
 		self.atomDensityExtentLabel.adjustSize()
+		self.grid.addWidget(self.atomDensityExtentLabel, 3, 6)
 
-		self.outputFormatGroup = QtWidgets.QButtonGroup(self.centralwidget)
+		self.outputFormatGroup = QtWidgets.QButtonGroup()
 		
 
-		
-		self.relLabel = QtWidgets.QLabel(self.centralwidget)
-		self.relLabel.setGeometry(QtCore.QRect(520, 170, 121, 16))
+		self.settingsGrid = QtWidgets.QGridLayout()
+
+		self.relLabel = QtWidgets.QLabel()
 		self.relLabel.setObjectName("relLabel")
 		self.relLabel.setText('step size')
+		self.settingsGrid.addWidget(self.relLabel, 0,2)
 		
-		self.bkgscalebox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.bkgscalebox.setGeometry(QtCore.QRect(450, 190, 61, 22))
+		self.bkgscalebox = QtWidgets.QDoubleSpinBox()
 		self.bkgscalebox.setProperty("value", 1)
 		self.bkgscalebox.setObjectName("bkgscalebox")
 		self.bkgscalebox.setDecimals(3)
 		self.bkgscalebox.setSingleStep(0.1)
 		self.bkgscalebox.setKeyboardTracking(False)
+		self.settingsGrid.addWidget(self.bkgscalebox, 1, 1)
 
-		self.bkgscalerel = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.bkgscalerel.setGeometry(QtCore.QRect(520, 190, 61, 22))
+		self.bkgscalerel = QtWidgets.QDoubleSpinBox()
 		self.bkgscalerel.setProperty("value", 0.1)
 		self.bkgscalerel.setObjectName("bkgscalerel")
 		self.bkgscalerel.setDecimals(3)
 		self.bkgscalerel.setSingleStep(0.01)
 		self.bkgscalerel.setMinimum(-1)
 		self.bkgscalerel.setMaximum(1)
+		self.settingsGrid.addWidget(self.bkgscalerel, 1,2)
 
-		self.bkgscaleLabel = QtWidgets.QLabel(self.centralwidget)
-		self.bkgscaleLabel.setGeometry(QtCore.QRect(371, 190, 121, 16))
+		self.bkgscaleLabel = QtWidgets.QLabel()
 		self.bkgscaleLabel.setObjectName("bkgscaleLabel")
+		self.settingsGrid.addWidget(self.bkgscaleLabel, 1,0)
 
-		self.qminbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qminbox.setGeometry(QtCore.QRect(450, 230, 61, 22))
+		self.qminbox = QtWidgets.QDoubleSpinBox()
 		self.qminbox.setProperty("value", 1)
 		self.qminbox.setObjectName("qminbox")
 		self.qminbox.setDecimals(2)
 		self.qminbox.setSingleStep(0.1)
 		self.qminbox.setKeyboardTracking(False)
+		self.settingsGrid.addWidget(self.qminbox, 2, 1)
 
-		self.qminrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qminrel.setGeometry(QtCore.QRect(520, 230, 61, 22))
+		self.qminrel = QtWidgets.QDoubleSpinBox()
 		self.qminrel.setProperty("value", 0.1)
 		self.qminrel.setObjectName("qminrel")
 		self.qminrel.setDecimals(2)
 		self.qminrel.setSingleStep(0.01)
 		self.qminrel.setMinimum(-1)
 		self.qminrel.setMaximum(1)
+		self.settingsGrid.addWidget(self.qminrel, 2, 2)
 
-		self.QminLabel = QtWidgets.QLabel(self.centralwidget)
-		self.QminLabel.setGeometry(QtCore.QRect(371, 230, 71, 16))
+		self.QminLabel = QtWidgets.QLabel()
 		self.QminLabel.setObjectName("QminLabel")
+		self.settingsGrid.addWidget(self.QminLabel, 2, 0)
 		
-		self.qmaxbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qmaxbox.setGeometry(QtCore.QRect(450, 270, 61, 22))
+		self.qmaxbox = QtWidgets.QDoubleSpinBox()
 		self.qmaxbox.setProperty("value", 23)
 		self.qmaxbox.setObjectName("qmaxbox")
 		self.qmaxbox.setDecimals(2)
 		self.qmaxbox.setSingleStep(0.1)
 		self.qmaxbox.setMinimum(self.qminbox.value()+1)
 		self.qmaxbox.setKeyboardTracking(False)
+		self.settingsGrid.addWidget(self.qmaxbox, 3, 1)
 
-		self.qmaxrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qmaxrel.setGeometry(QtCore.QRect(520, 270, 61, 22))
+		self.qmaxrel = QtWidgets.QDoubleSpinBox()
 		self.qmaxrel.setProperty("value", 0.1)
 		self.qmaxrel.setObjectName("qmaxrel")
 		self.qmaxrel.setDecimals(2)
 		self.qmaxrel.setSingleStep(0.1)
 		self.qmaxrel.setMinimum(-1)
 		self.qmaxrel.setMaximum(1)
+		self.settingsGrid.addWidget(self.qmaxrel, 3, 2)
 
-		self.qmaxtogether = QtWidgets.QCheckBox(self.centralwidget)
-		self.qmaxtogether.setGeometry(590, 270, 80, 20)
+		self.qmaxtogether = QtWidgets.QCheckBox()
 		self.qmaxtogether.setObjectName('qmaxtogether')
 		self.qmaxtogether.setText('Qmax together?')
 		self.qmaxtogether.adjustSize()
+		self.settingsGrid.addWidget(self.qmaxtogether, 3, 4)
 
-		self.QmaxLabel = QtWidgets.QLabel(self.centralwidget)
-		self.QmaxLabel.setGeometry(QtCore.QRect(371, 270, 71, 16))
+		self.QmaxLabel = QtWidgets.QLabel()
 		self.QmaxLabel.setObjectName("QmaxLabel")
+		self.settingsGrid.addWidget(self.QmaxLabel, 3, 0)
+		
 				
-		self.qmaxinstbox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qmaxinstbox.setGeometry(QtCore.QRect(450, 310, 61, 21))
+		self.qmaxinstbox = QtWidgets.QDoubleSpinBox()
 		self.qmaxinstbox.setProperty("value", 23)
 		self.qmaxinstbox.setObjectName("qmaxinstbox")
 		self.qmaxinstbox.setDecimals(2)
 		self.qmaxinstbox.setSingleStep(0.1)
 		self.qmaxinstbox.setMinimum(self.qminbox.value()+1)
 		self.qmaxinstbox.setKeyboardTracking(False)
+		self.settingsGrid.addWidget(self.qmaxinstbox, 4, 1)
 
-		self.qmaxinstrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.qmaxinstrel.setGeometry(QtCore.QRect(520, 310, 61, 21))
+		self.qmaxinstrel = QtWidgets.QDoubleSpinBox()
 		self.qmaxinstrel.setProperty("value", 0.1)
 		self.qmaxinstrel.setObjectName("qmaxinstrel")
 		self.qmaxinstrel.setDecimals(2)
 		self.qmaxinstrel.setSingleStep(0.1)
 		self.qmaxinstrel.setMaximum(1)
 		self.qmaxinstrel.setMinimum(-1)
+		self.settingsGrid.addWidget(self.qmaxinstrel, 4, 2)
 
-		self.qmaxinstLabel = QtWidgets.QLabel(self.centralwidget)
-		self.qmaxinstLabel.setGeometry(QtCore.QRect(371, 310, 81, 16))
+		self.qmaxinstLabel = QtWidgets.QLabel()
 		self.qmaxinstLabel.setObjectName("qmaxinstLabel")
+		self.settingsGrid.addWidget(self.qmaxinstLabel, 4, 0)
 
-		self.rpolybox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.rpolybox.setGeometry(QtCore.QRect(450, 350, 61, 21))
+		self.rpolybox = QtWidgets.QDoubleSpinBox()
 		self.rpolybox.setMaximum(3)
 		self.rpolybox.setProperty("value", 1)
 		self.rpolybox.setObjectName("rpolybox")
 		self.rpolybox.setSingleStep(0.1)
 		self.rpolybox.setDecimals(2)
 		self.rpolybox.setKeyboardTracking(False)
+		self.settingsGrid.addWidget(self.rpolybox, 5, 1)
 
-		self.rpolyrel = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.rpolyrel.setGeometry(QtCore.QRect(520, 350, 61, 21))
+		self.rpolyrel = QtWidgets.QDoubleSpinBox()
 		self.rpolyrel.setMaximum(5)
 		self.rpolyrel.setProperty("value", 0.1)
 		self.rpolyrel.setObjectName("rpolyrel")
@@ -379,13 +310,13 @@ class Ui_MainWindow(object):
 		self.rpolyrel.setDecimals(2)
 		self.rpolyrel.setMaximum(1)
 		self.rpolyrel.setMinimum(-1)
+		self.settingsGrid.addWidget(self.rpolyrel, 5, 2)
 
-		self.rpolyLabel = QtWidgets.QLabel(self.centralwidget)
-		self.rpolyLabel.setGeometry(QtCore.QRect(371, 350, 81, 16))
+		self.rpolyLabel = QtWidgets.QLabel()
 		self.rpolyLabel.setObjectName("rpolyLabel")
+		self.settingsGrid.addWidget(self.rpolyLabel, 5, 0)
 
-		self.scaleBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.scaleBox.setGeometry(QtCore.QRect(450, 380, 61, 21))
+		self.scaleBox = QtWidgets.QDoubleSpinBox()
 		self.scaleBox.setMaximum(100)
 		self.scaleBox.setMinimum(0.01)
 		self.scaleBox.setValue(1)
@@ -393,9 +324,9 @@ class Ui_MainWindow(object):
 		self.scaleBox.setSingleStep(0.1)
 		self.scaleBox.setDecimals(2)
 		self.scaleBox.setKeyboardTracking(False)
+		self.settingsGrid.addWidget(self.scaleBox, 6, 1)
 	
-		self.scalerel = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.scalerel.setGeometry(QtCore.QRect(520, 380, 61, 21))
+		self.scalerel = QtWidgets.QDoubleSpinBox()
 		self.scalerel.setMaximum(5)
 		self.scalerel.setProperty("value", 0.1)
 		self.scalerel.setObjectName("scalerel")
@@ -403,42 +334,54 @@ class Ui_MainWindow(object):
 		self.scalerel.setDecimals(2)
 		self.scalerel.setMaximum(1)
 		self.scalerel.setMinimum(-1)
+		self.settingsGrid.addWidget(self.scalerel, 6, 2)
 
-		self.scaleLabel = QtWidgets.QLabel(self.centralwidget)
-		self.scaleLabel.setGeometry(QtCore.QRect(371, 380, 81, 16))
+		self.scaleLabel = QtWidgets.QLabel()
 		self.scaleLabel.setObjectName("scaleLabel")
 		self.scaleLabel.setText("scale")
+		self.settingsGrid.addWidget(self.scaleLabel, 6, 0)
 
-		self.scaleLabel2 = QtWidgets.QLabel(self.centralwidget)
-		self.scaleLabel2.setGeometry(QtCore.QRect(590, 380, 81, 16))
+		self.scaleLabel2 = QtWidgets.QLabel()
 		self.scaleLabel2.setObjectName("scaleLabel2")
 		self.scaleLabel2.setText("(doesn't currently\ndo anything)")
 		self.scaleLabel2.adjustSize()
+		self.settingsGrid.addWidget(self.scaleLabel2, 6, 4)
 
-		self.regridGroup = QtWidgets.QButtonGroup(self.centralwidget)
+		self.grid.addLayout(self.settingsGrid, 6, 3, 7, 5)
 
-		self.noRebin = QtWidgets.QRadioButton(self.centralwidget)
-		self.noRebin.setGeometry(QtCore.QRect(350, 410, 81, 16))
+		self.bingrid = QtWidgets.QHBoxLayout()
+		self.regridGroup = QtWidgets.QButtonGroup()
+
+		self.noRebin = QtWidgets.QRadioButton()
 		self.noRebin.setText('no rebin')
 		self.noRebin.setChecked(True)
 		self.noRebin.adjustSize()
 		self.noRebin.setObjectName('noRebin')
+		self.bingrid.addWidget(self.noRebin)
 		
-		self.linearRebin = QtWidgets.QRadioButton(self.centralwidget)
-		self.linearRebin.setGeometry(QtCore.QRect(420, 410, 81, 16))
+		self.linearRebin = QtWidgets.QRadioButton()
 		self.linearRebin.setText('linear rebin')
 		self.linearRebin.setChecked(False)
 		self.linearRebin.adjustSize()
 		self.linearRebin.setObjectName('linearRebin')
+		self.bingrid.addWidget(self.linearRebin)
 
-		self.linearRebinLabel = QtWidgets.QLabel(self.centralwidget)
-		self.linearRebinLabel.setGeometry(QtCore.QRect(420, 430, 100, 18))
+		self.exponentialRebin = QtWidgets.QRadioButton()
+		self.exponentialRebin.setText('exponential rebin')
+		self.exponentialRebin.setChecked(False)
+		self.exponentialRebin.adjustSize()
+		self.exponentialRebin.setObjectName('exponentialRegrid')
+		self.bingrid.addWidget(self.exponentialRebin)
+
+		self.grid.addLayout(self.bingrid, 13, 4, 1, 3)
+
+		self.linearRebinLabel = QtWidgets.QLabel()
 		self.linearRebinLabel.setText('linear rebin\ngradient')
 		self.linearRebinLabel.adjustSize()
 		self.linearRebinLabel.setObjectName('linearRebinLabel')
+		self.grid.addWidget(self.linearRebinLabel, 14, 5)
 		
-		self.linearRebinGradientBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.linearRebinGradientBox.setGeometry(420,460, 50, 20)
+		self.linearRebinGradientBox = QtWidgets.QDoubleSpinBox()
 		self.linearRebinGradientBox.setObjectName('linearRebinGradientBox')
 		self.linearRebinGradientBox.setValue(1.1)
 		self.linearRebinGradientBox.setDecimals(2)
@@ -446,22 +389,15 @@ class Ui_MainWindow(object):
 		self.linearRebinGradientBox.setMaximum(5.0)
 		self.linearRebinGradientBox.setSingleStep(0.1)
 		self.linearRebinGradientBox.setKeyboardTracking(False)
+		self.grid.addWidget(self.linearRebinGradientBox, 15,5)
 
-		self.exponentialRebin = QtWidgets.QRadioButton(self.centralwidget)
-		self.exponentialRebin.setGeometry(QtCore.QRect(510, 410, 81, 16))
-		self.exponentialRebin.setText('exponential rebin')
-		self.exponentialRebin.setChecked(False)
-		self.exponentialRebin.adjustSize()
-		self.exponentialRebin.setObjectName('exponentialRegrid')
-
-		self.exponentialRebinLabel = QtWidgets.QLabel(self.centralwidget)
-		self.exponentialRebinLabel.setGeometry(QtCore.QRect(510, 430, 100, 16))
+		self.exponentialRebinLabel = QtWidgets.QLabel()
 		self.exponentialRebinLabel.setText('exponential\nconstant')
 		self.exponentialRebinLabel.adjustSize()
 		self.exponentialRebinLabel.setObjectName('exponentialRebinLabel')
+		self.grid.addWidget(self.exponentialRebinLabel, 14,6)
 
-		self.exponentialRebinConstant = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.exponentialRebinConstant.setGeometry(510,460, 70, 20)
+		self.exponentialRebinConstant = QtWidgets.QDoubleSpinBox()
 		self.exponentialRebinConstant.setObjectName('exponentialRebinConstant')
 		self.exponentialRebinConstant.setDecimals(5)
 		self.exponentialRebinConstant.setValue(0.0005)
@@ -469,16 +405,16 @@ class Ui_MainWindow(object):
 		self.exponentialRebinConstant.setMaximum(0.01)
 		self.exponentialRebinConstant.setSingleStep(0.0001)
 		self.exponentialRebinConstant.setKeyboardTracking(False)
+		self.grid.addWidget(self.exponentialRebinConstant, 15,6)
+
 		
 		'''
-		self.exponentialRebinOrderLabel = QtWidgets.QLabel(self.centralwidget)
-		self.exponentialRebinOrderLabel.setGeometry(QtCore.QRect(600, 400, 100, 16))
+		self.exponentialRebinOrderLabel = QtWidgets.QLabel()
 		self.exponentialRebinOrderLabel.setText('exponential\norder')
 		self.exponentialRebinOrderLabel.adjustSize()
 		self.exponentialRebinOrderLabel.setObjectName('exponentialRebinOrderLabel')
 
-		self.exponentialRebinOrder = QtWidgets.QSpinBox(self.centralwidget)
-		self.exponentialRebinOrder.setGeometry(600,430, 40, 20)
+		self.exponentialRebinOrder = QtWidgets.QSpinBox()
 		self.exponentialRebinOrder.setObjectName('exponentialRebinOrder')
 		self.exponentialRebinOrder.setValue(1)
 		self.exponentialRebinOrder.setMinimum(1)
@@ -490,61 +426,75 @@ class Ui_MainWindow(object):
 		self.regridGroup.addButton(self.linearRebin)
 		self.regridGroup.addButton(self.exponentialRebin)
 
-		self.plotLabel = QtWidgets.QLabel(self.centralwidget)
-		self.plotLabel.setGeometry(QtCore.QRect(480, 110, 41, 16))
+		self.plotLabel = QtWidgets.QLabel()
 		self.plotLabel.setObjectName("plotLabel")
-
-		self.iqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.iqCheckBox.setGeometry(QtCore.QRect(370, 130, 81, 20))
+		self.grid.addWidget(self.plotLabel, 4, 5, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+		
+		self.plotGrid = QtWidgets.QHBoxLayout()
+		self.iqCheckBox = QtWidgets.QCheckBox()
 		self.iqCheckBox.setObjectName("iqCheckBox")
-		self.sqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.sqCheckBox.setGeometry(QtCore.QRect(440, 130, 81, 20))
+		self.plotGrid.addWidget(self.iqCheckBox)
+		self.sqCheckBox = QtWidgets.QCheckBox()
 		self.sqCheckBox.setObjectName("sqCheckBox")
-		self.fqCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.fqCheckBox.setGeometry(QtCore.QRect(510, 130, 81, 20))
+		self.plotGrid.addWidget(self.sqCheckBox)
+		self.fqCheckBox = QtWidgets.QCheckBox()
 		self.fqCheckBox.setObjectName("fqCheckBox")
+		self.plotGrid.addWidget(self.fqCheckBox)
+		self.grCheckBox = QtWidgets.QCheckBox()
+		self.grCheckBox.setObjectName("grCheckBox")
+		self.plotGrid.addWidget(self.grCheckBox)
 
-		self.saveButton = QtWidgets.QPushButton(self.centralwidget)
-		self.saveButton.setGeometry(QtCore.QRect(410, 500, 93, 28))
+		self.grid.addLayout(self.plotGrid, 5, 4, 1, 3)
+		
+		self.buttongrid = QtWidgets.QGridLayout()
+		self.plotButton = QtWidgets.QPushButton()
+		self.plotButton.setObjectName("plotButton")
+		self.buttongrid.addWidget(self.plotButton,0,0)
+
+		
+		self.saveButton = QtWidgets.QPushButton()
 		self.saveButton.setObjectName("saveButton")
+		self.buttongrid.addWidget(self.saveButton, 0,1)
 
-		self.saveDirButton = QtWidgets.QPushButton(self.centralwidget)
-		self.saveDirButton.setGeometry(QtCore.QRect(310, 530, 93, 28))
+		self.saveDirButton = QtWidgets.QPushButton()
 		self.saveDirButton.setObjectName("saveDirButton")
 		self.saveDirButton.setText('run directory')
+		self.buttongrid.addWidget(self.saveDirButton, 1,0)
 
-		self.stopSave = QtWidgets.QPushButton(self.centralwidget)
-		self.stopSave.setGeometry(QtCore.QRect(410, 530, 93, 28))
+		self.stopSave = QtWidgets.QPushButton()
 		self.stopSave.setObjectName("stopSave")
 		self.stopSave.setText('stop saving')
 		self.stopSave.setEnabled(False)
+		self.buttongrid.addWidget(self.stopSave, 1,1)
+
+		self.grid.addLayout(self.buttongrid, 16, 2, 2, 3)
+
+		self.axisCheckBox = QtWidgets.QCheckBox()
+		self.axisCheckBox.setObjectName("axisCheckBox")
+		self.axisCheckBox.setText("reset axis on update?")
+		self.axisCheckBox.adjustSize()
+		self.grid.addWidget(self.axisCheckBox, 15, 2)
 
 
-		self.grCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.grCheckBox.setGeometry(QtCore.QRect(590, 130, 81, 20))
-		self.grCheckBox.setObjectName("grCheckBox")
-
-
-
-		self.rminBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.rminBox.setGeometry(QtCore.QRect(120, 290, 62, 22))
+		self.rsettingGrid = QtWidgets.QGridLayout()
+		self.rminBox = QtWidgets.QDoubleSpinBox()
 		self.rminBox.setMinimum(0.01)
 		self.rminBox.setMaximum(100.0)
 		self.rminBox.setSingleStep(0.1)
 		self.rminBox.setProperty("value", 0.5)
 		self.rminBox.setObjectName("rminBox")
 		self.rminBox.setKeyboardTracking(False)
+		self.rsettingGrid.addWidget(self.rminBox, 0, 0)
 
-		self.rmaxBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.rmaxBox.setGeometry(QtCore.QRect(120, 330, 62, 22))
+		self.rmaxBox = QtWidgets.QDoubleSpinBox()
 		self.rmaxBox.setMinimum(3.0)
 		self.rmaxBox.setMaximum(10000.0)
 		self.rmaxBox.setProperty("value", 30.0)
 		self.rmaxBox.setObjectName("rmaxBox")
 		self.rmaxBox.setKeyboardTracking(False)
+		self.rsettingGrid.addWidget(self.rmaxBox, 1, 0)
 
-		self.rstepBox = QtWidgets.QDoubleSpinBox(self.centralwidget)
-		self.rstepBox.setGeometry(QtCore.QRect(120, 370, 62, 22))
+		self.rstepBox = QtWidgets.QDoubleSpinBox()
 		self.rstepBox.setDecimals(3)
 		self.rstepBox.setMinimum(0.005)
 		self.rstepBox.setMaximum(1.0)
@@ -552,33 +502,33 @@ class Ui_MainWindow(object):
 		self.rstepBox.setProperty("value", 0.01)
 		self.rstepBox.setObjectName("rstepBox")
 		self.rstepBox.setKeyboardTracking(False)
-
-		self.rminLabel = QtWidgets.QLabel(self.centralwidget)
-		self.rminLabel.setGeometry(QtCore.QRect(200, 290, 55, 16))
-		self.rminLabel.setObjectName("rminLabel")
-		self.rmaxLablel = QtWidgets.QLabel(self.centralwidget)
-		self.rmaxLablel.setGeometry(QtCore.QRect(200, 330, 55, 16))
-		self.rmaxLablel.setObjectName("rmaxLablel")
-		self.rstepLabel = QtWidgets.QLabel(self.centralwidget)
-		self.rstepLabel.setGeometry(QtCore.QRect(200, 370, 55, 16))
-		self.rstepLabel.setObjectName("rstepLabel")
+		self.rsettingGrid.addWidget(self.rstepBox, 2, 0)
 		
-		self.errorMessageLabel = QtWidgets.QLabel(self.centralwidget)
-		self.errorMessageLabel.setGeometry(QtCore.QRect(20, 470, 55, 16))
+		self.rminLabel = QtWidgets.QLabel()
+		self.rminLabel.setObjectName("rminLabel")
+		self.rsettingGrid.addWidget(self.rminLabel, 0, 1)
+
+		self.rmaxLablel = QtWidgets.QLabel()
+		self.rmaxLablel.setObjectName("rmaxLablel")
+		self.rsettingGrid.addWidget(self.rmaxLablel, 1, 1)
+
+		self.rstepLabel = QtWidgets.QLabel()
+		self.rstepLabel.setObjectName("rstepLabel")
+		self.rsettingGrid.addWidget(self.rstepLabel, 2, 1)
+
+		self.grid.addLayout(self.rsettingGrid, 8, 1, 4, 2)
+		
+		self.errorMessageLabel = QtWidgets.QLabel()
 		self.errorMessageLabel.setObjectName('errorMessageLabel')
 
-		self.plotButton = QtWidgets.QPushButton(self.centralwidget)
-		self.plotButton.setGeometry(QtCore.QRect(310, 500, 93, 28))
-		self.plotButton.setObjectName("plotButton")
+		self.grid.addWidget(self.errorMessageLabel, 15, 0, 2,2)
 
-		self.axisCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-		self.axisCheckBox.setGeometry(QtCore.QRect(310, 480, 100, 20))
-		self.axisCheckBox.setObjectName("axisCheckBox")
-		self.axisCheckBox.setText("reset axis on update?")
-		self.axisCheckBox.adjustSize()
+
+
+
 
 		
-
+		self.centralwidget.setLayout(self.grid)
 		MainWindow.setCentralWidget(self.centralwidget)
 		self.menubar = QtWidgets.QMenuBar(MainWindow)
 		self.menubar.setGeometry(QtCore.QRect(0, 0, 702, 26))
@@ -706,7 +656,7 @@ class Ui_MainWindow(object):
 		#self.gudrunFormat.setText(_translate("MainWindow", "gudrun format"))
 		#self.pdfgetxFormat.setText(_translate("MainWindow", "pdfgetx format"))
 		self.fileLabel.setText(_translate("MainWindow", "file"))
-		self.bkgFileLabel.setText(_translate("MainWindow", "background\nfile"))
+		
 		self.bkgscaleLabel.setText(_translate("MainWindow", "background\nscale"))
 		self.bkgscaleLabel.adjustSize()
 		self.rpolyLabel.setText(_translate("MainWindow", "rpoly"))

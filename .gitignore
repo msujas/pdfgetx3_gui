@@ -5,12 +5,12 @@ guilayout*
 startup.txt
 gudrun.zip
 test.py
-exampleFiles/Xray*
-exampleFiles/fq
-exampleFiles/gr
-exampleFiles/sq
+pdfgetx3gui/exampleFiles/Xray*
+pdfgetx3gui/exampleFiles/fq
+pdfgetx3gui/exampleFiles/gr
+pdfgetx3gui/exampleFiles/sq
 .ipynb_checkpoints*
-exampleFiles/.ipynb_checkpoints*
+pdfgetx3gui/exampleFiles/.ipynb_checkpoints*
 pdfFileList.dat
 pdfConfigFile.dat
 pdfBkgFileList.dat
@@ -31,3 +31,4 @@ installer.cfg
 *.yml
 dist*
 setup.py
+.vscode
