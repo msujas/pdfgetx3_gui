@@ -63,10 +63,10 @@ class Ui_MainWindow(object):
 		self.filename.setEnabled(False)
 		self.filename.setFont(QtGui.QFont('Calibiri',7))
 		self.filename.setStyleSheet("color: black;")
-		self.grid.addWidget(self.filename, 0,0, 1, 3)
 		self.filename.setText(f"{self.configfilepath}/exampleFiles/LaB6_0p4mm_011_av10_monitor.xye")
+		self.grid.addWidget(self.filename, 0,0, 1, 3)
 		
-
+		
 
 		self.bkgfilename = QtWidgets.QLineEdit()
 		self.bkgfilename.setObjectName("bkgfilename")
@@ -567,11 +567,17 @@ class Ui_MainWindow(object):
 		self.running = False
 		self.fileList = []
 		self.bkgfileList = []
-		if self.filename != '':
+		if self.filename.text():
 			self.fileList.append(self.filename.text())
 			self.filelistBox.addItem('')
 			self.filelistBox.setItemText(self.filelistBox.count()-1,os.path.basename(self.filename.text()))
 			self.filelistBox.setCurrentIndex(self.filelistBox.count()-1)
+
+		if self.bkgfilename.text():
+			self.bkgfileList.append(self.bkgfilename.text())
+			self.bkgfilelistBox.addItem(os.path.basename(self.bkgfilename.text()))
+			#self.bkgfilelistBox.setItemText(self.bkgfilelistBox.count()-1,os.path.basename(self.bkgfilename.text()))
+			#self.bkgfilelistBox.setCurrentIndex(self.bkgfilelistBox.count()-1)
 
 		self.plotButton.clicked.connect(self.updateConfigFile)
 		self.plotButton.clicked.connect(self.startWorker)
@@ -589,6 +595,8 @@ class Ui_MainWindow(object):
 			self.readFileconfig()
 		self.filelistBox.currentTextChanged.connect(self.changeFile)
 		self.bkgfilelistBox.currentTextChanged.connect(self.bkgchangeFile)
+		
+
 
 		self.bkgscalebox.valueChanged.connect(self.updateBkgscale)
 		self.rminBox.valueChanged.connect(self.updateRmin)
