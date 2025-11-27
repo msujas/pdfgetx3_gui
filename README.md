@@ -8,7 +8,7 @@ Selected measurement files and background files are put into lists so they can b
 There's a rebinning option to reduce high Q noise. It's not so efficient, so could probably be faster.
 
 
-![image](https://github.com/user-attachments/assets/40c74064-bf7c-49f9-a22f-c7558a570e6c)
+<img width="695" height="579" alt="image" src="https://github.com/user-attachments/assets/b9d37adb-e36a-48c2-a1e0-2008cccae4a1" />
 
 ![image](https://github.com/user-attachments/assets/4a24f026-434b-45b5-a108-6493cbdf323c)
 
