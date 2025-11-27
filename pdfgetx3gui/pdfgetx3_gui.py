@@ -23,10 +23,6 @@ import re
 from glob import glob
 from .pdfworker import Worker, SaveDirWorker
 
-if platform.system() == 'Windows':
-	myappid = u'pdfgetx3GUI'   #I don't really understand these lines, but it's somehow needed to display the icon in the taskbar
-	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) 
-
 def text_to_bool(text: str) -> bool:
 	if 'True' in text:
 		return True
@@ -62,7 +58,7 @@ class Ui_MainWindow(object):
 		self.centralwidget = QtWidgets.QWidget(MainWindow)
 		self.centralwidget.setObjectName("centralwidget")
 
-		MainWindow.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.png'))
+		MainWindow.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.ico'))
 		
 		self.grid = QtWidgets.QGridLayout()
 

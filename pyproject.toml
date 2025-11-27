@@ -28,7 +28,7 @@ pdfgetx3gui = "pdfgetx3gui.pdfgetx3_gui:main"
 
 [tool.setuptools]
 include-package-data = true
-package-data = {"icon"=["icon.png"],"exampleFiles"=["*.xye"]}
+package-data = {"icon"=["*"],"exampleFiles"=["*.xye"]}
 packages = ["pdfgetx3gui"]
 
 [project.urls]
