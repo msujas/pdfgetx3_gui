@@ -1,5 +1,5 @@
 # pdfgetx3_gui
-A gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3. Requires PDFgetX3 https://www.diffpy.org/products/pdfgetx.html, Scipy and PyQt(5) (pip or conda). Other common or standard packages required: numpy, matplotlib.
+A gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3. Requires PDFgetX3 https://www.diffpy.org/products/pdfgetx.html, other dependencies (SciPy, numpy, matplotlib, PyQt5) will be installed through the installation (if not already installed).
 
 To install, either clone this repository and run ```pip install -e .``` (-e optional to make it editable), or from PyPi with ```pip install pdfgetx3gui```. This creates a python package with an exe file called pdfgetx3gui in the python 'Scripts' folder, then it can be run with ```pdfgetx3gui``` in the terminal (if Scripts is in your PATH). 
 
