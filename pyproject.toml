@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pdfgetx3gui"
-version = "1.3.1"
+version = "1.3.2"
 requires-python = ">= 3.7"
 dependencies = ["scipy",
                 "numpy",

@@ -47,14 +47,15 @@ def loadData(filename):
 	raise ValueError(f'couldn\'t find data in {filename}')	
 
 
-class Ui_MainWindow(object):
-	def setupUi(self, MainWindow):
+class Ui_MainWindow(QtWidgets.QMainWindow):
+	def setupUi(self):
+		super().__init__()
 		self.configfilepath = os.path.dirname(os.path.realpath(__file__))
-		MainWindow.setObjectName("PDFGetX3GUI")
-		self.centralwidget = QtWidgets.QWidget(MainWindow)
+		#self.setObjectName("PDFGetX3GUI")
+		self.centralwidget = QtWidgets.QWidget()
 		self.centralwidget.setObjectName("centralwidget")
 
-		MainWindow.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.ico'))
+		self.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.ico'))
 		
 		self.grid = QtWidgets.QGridLayout()
 
@@ -525,22 +526,59 @@ class Ui_MainWindow(object):
 
 		
 		self.centralwidget.setLayout(self.grid)
-		MainWindow.setCentralWidget(self.centralwidget)
-		self.menubar = QtWidgets.QMenuBar(MainWindow)
+		self.setCentralWidget(self.centralwidget)
+		self.menubar = QtWidgets.QMenuBar(self)
 		self.menubar.setGeometry(QtCore.QRect(0, 0, 702, 26))
 		self.menubar.setObjectName("menubar")
 		self.menuFile = QtWidgets.QMenu(self.menubar)
 		self.menuFile.setObjectName("menuFile")
-		MainWindow.setMenuBar(self.menubar)
-		self.statusbar = QtWidgets.QStatusBar(MainWindow)
+		self.setMenuBar(self.menubar)
+		self.statusbar = QtWidgets.QStatusBar(self)
 		self.statusbar.setObjectName("statusbar")
-		MainWindow.setStatusBar(self.statusbar)
-		self.actionOpen = QtWidgets.QAction(MainWindow)
+		self.setStatusBar(self.statusbar)
+		self.actionOpen = QtWidgets.QAction(self)
 		self.actionOpen.setObjectName("actionOpen")
 		self.menuFile.addAction(self.actionOpen)
 		self.menubar.addAction(self.menuFile.menuAction())
-		self.retranslateUi(MainWindow)
-		QtCore.QMetaObject.connectSlotsByName(MainWindow)
+		#self.retranslateUi()
+
+		self.setWindowTitle( "PDFgetX3GUI")
+		self.fileLabel.setText( "file")
+	
+		self.bkgscaleLabel.setText( "background\nscale")
+		#self.bkgscaleLabel.adjustSize()
+		self.rpolyLabel.setText( "rpoly")
+		self.QminLabel.setText( "Qmin")
+		self.QmaxLabel.setText( "Qmax")
+		self.qmaxinstLabel.setText( "Qmax inst")
+	
+		self.fileListLabel.setText( "File list")
+		self.compositionBox.setText( "LaB6")
+		self.wavelengthBox.setText( "0.270793")
+		self.compositionLabel.setText( "composition")
+		self.bkgfilebutton.setText( "...")
+		self.removeButton.setText( "remove from list")
+		self.iqCheckBox.setText( "I(Q)")
+		self.sqCheckBox.setText( "S(Q)")
+		self.fqCheckBox.setText( "F(Q)")
+		self.saveButton.setText( "Save")
+		self.plotLabel.setText( "Plot")
+		self.grCheckBox.setText( "G(r)")
+		self.fileButton.setText( "...")
+		self.fileButton.setShortcut( "Ctrl+O")
+		self.QButton.setText( "Q (\u00C5\u207B\u00B9)")
+		self.twothetaButton.setText( "2theta (\u00B0)")
+		self.wavelengthLabel.setText( "wavelength")
+		self.plotButton.setText( "Plot")
+		self.inputFormatLabel.setText( "Input format")
+		self.menuFile.setTitle( "File")
+		self.actionOpen.setText( "Open")
+		self.actionOpen.setShortcut( "Ctrl+O")
+		self.rminLabel.setText( "rmin (\u00C5)")
+		self.rmaxLablel.setText( "rmax (\u00C5)")
+		self.rstepLabel.setText( "rstep (\u00C5)")
+
+		QtCore.QMetaObject.connectSlotsByName(self)
 		
 		
 		self.fig = None
@@ -602,7 +640,6 @@ class Ui_MainWindow(object):
 		self.rminBox.valueChanged.connect(self.updateRmin)
 		self.rmaxBox.valueChanged.connect(self.updateRmax)
 		self.rstepBox.valueChanged.connect(self.updateRstep)
-		#self.compositionBox.textChanged.connect(self.updateComposition)
 		self.qminbox.valueChanged.connect(self.updateQmin)
 		self.qminbox.valueChanged.connect(self.setQmax_lims)
 		self.qmaxbox.valueChanged.connect(self.updateQmax)
@@ -611,7 +648,6 @@ class Ui_MainWindow(object):
 		self.rpolybox.valueChanged.connect(self.updateRpoly)
 		self.linearRebinGradientBox.valueChanged.connect(self.updatexy)
 		self.exponentialRebinConstant.valueChanged.connect(self.updatexy)
-		#self.exponentialRebinOrder.valueChanged.connect(self.updatexy)
 		self.scaleBox.valueChanged.connect(self.runUpdate)
 
 		self.bkgscalebox.valueChanged.connect(self.updateConfigFile)
@@ -653,46 +689,8 @@ class Ui_MainWindow(object):
 		self.saveDirButton.clicked.connect(self.saveAll)
 		self.stopSave.clicked.connect(self.stop_worker2)
 
-		
-	def retranslateUi(self, MainWindow):
-		_translate = QtCore.QCoreApplication.translate
-		MainWindow.setWindowTitle(_translate("MainWindow", "PDFgetX3GUI"))
-		#self.gudrunFormat.setText(_translate("MainWindow", "gudrun format"))
-		#self.pdfgetxFormat.setText(_translate("MainWindow", "pdfgetx format"))
-		self.fileLabel.setText(_translate("MainWindow", "file"))
-		
-		self.bkgscaleLabel.setText(_translate("MainWindow", "background\nscale"))
-		self.bkgscaleLabel.adjustSize()
-		self.rpolyLabel.setText(_translate("MainWindow", "rpoly"))
-		self.QminLabel.setText(_translate("MainWindow", "Qmin"))
-		self.QmaxLabel.setText(_translate("MainWindow", "Qmax"))
-		self.qmaxinstLabel.setText(_translate("MainWindow", "Qmax inst"))
-		
-		self.fileListLabel.setText(_translate("MainWindow", "File list"))		
-		self.compositionBox.setText(_translate("MainWindow", "LaB6"))
-		self.wavelengthBox.setText(_translate("MainWindow", "0.270793"))
-		self.compositionLabel.setText(_translate("MainWindow", "composition"))
-		self.bkgfilebutton.setText(_translate("MainWindow", "..."))
-		self.removeButton.setText(_translate("MainWindow", "remove from list"))
-		self.iqCheckBox.setText(_translate("MainWindow", "I(Q)"))
-		self.sqCheckBox.setText(_translate("MainWindow", "S(Q)"))
-		self.fqCheckBox.setText(_translate("MainWindow", "F(Q)"))
-		self.saveButton.setText(_translate("MainWindow", "Save"))
-		self.plotLabel.setText(_translate("MainWindow", "Plot"))
-		self.grCheckBox.setText(_translate("MainWindow", "G(r)"))
-		self.fileButton.setText(_translate("MainWindow", "..."))
-		self.fileButton.setShortcut(_translate("MainWindow", "Ctrl+O"))
-		self.QButton.setText(_translate("MainWindow", "Q (\u00C5\u207B\u00B9)"))
-		self.twothetaButton.setText(_translate("MainWindow", "2theta (\u00B0)"))
-		self.wavelengthLabel.setText(_translate("MainWindow", "wavelength"))
-		self.plotButton.setText(_translate("MainWindow", "Plot"))
-		self.inputFormatLabel.setText(_translate("MainWindow", "Input format"))
-		self.menuFile.setTitle(_translate("MainWindow", "File"))
-		self.actionOpen.setText(_translate("MainWindow", "Open"))
-		self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
-		self.rminLabel.setText(_translate("MainWindow", "rmin (\u00C5)"))
-		self.rmaxLablel.setText(_translate("MainWindow", "rmax (\u00C5)"))
-		self.rstepLabel.setText(_translate("MainWindow", "rstep (\u00C5)"))
+	
+
 
 	def startWorker(self):
 		self.plotted = False
@@ -701,7 +699,6 @@ class Ui_MainWindow(object):
 			self.thread.stop()
 		
 		inputfile=self.filename.text()
-		#x,y = np.loadtxt(inputfile,comments = '#', unpack = True, usecols=(0,1))
 		x,y = loadData(inputfile)
 		if self.noRebin.isChecked():
 			xrebin = None
@@ -1351,13 +1348,16 @@ class Ui_MainWindow(object):
 		self.errorMessageLabel.setText(message)
 		self.errorMessageLabel.adjustSize()
 
+	def closeEvent(self, a0):
+		plt.close()
+		return super().closeEvent(a0)
+
 
 def main():
 	app = QtWidgets.QApplication(sys.argv)
-	MainWindow = QtWidgets.QMainWindow()
 	ui = Ui_MainWindow()
-	ui.setupUi(MainWindow)
-	MainWindow.show()
+	ui.setupUi()
+	ui.show()
 	sys.exit(app.exec_())
 
 if __name__ == "__main__":
