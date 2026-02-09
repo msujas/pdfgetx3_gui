@@ -9,6 +9,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 import os
 from pdfgetx3gui import pdffunctions
+from diffpy.pdfgetx import __version__ as pgxversion
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
@@ -426,7 +427,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 		self.plotLabel = QtWidgets.QLabel()
 		self.plotLabel.setObjectName("plotLabel")
 		self.grid.addWidget(self.plotLabel, 4, 5, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
-		
+
 		self.plotGrid = QtWidgets.QHBoxLayout()
 		self.iqCheckBox = QtWidgets.QCheckBox()
 		self.iqCheckBox.setObjectName("iqCheckBox")
@@ -514,6 +515,24 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 		self.rsettingGrid.addWidget(self.rstepLabel, 2, 1)
 
 		self.grid.addLayout(self.rsettingGrid, 8, 1, 4, 2)
+
+		self.lorchBox = QtWidgets.QCheckBox()
+		self.lorchBox.setObjectName('lorchBox')
+		self.lorchBox.setText('Lorch termination')
+		self.grid.addWidget(self.lorchBox, 13, 0)
+
+		self.stepBox = QtWidgets.QCheckBox()
+		self.stepBox.setObjectName('stepBox')
+		self.stepBox.setText('step termination')
+		self.grid.addWidget(self.stepBox, 13,1)
+
+		self.terminationLabel = QtWidgets.QLabel()
+		self.terminationLabel.setObjectName('terminationLabel')
+		self.terminationLabel.setText('termination functions (for pdfgetx3 2.4.0+)')
+		self.grid.addWidget(self.terminationLabel, 12,0, 1,2)
+
+		self.lorchBox.stateChanged.connect(self.updateTermination)
+		self.stepBox.stateChanged.connect(self.updateTermination)
 		
 		self.errorMessageLabel = QtWidgets.QLabel()
 		self.errorMessageLabel.setObjectName('errorMessageLabel')
@@ -716,6 +735,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 		rmax = self.rmaxBox.value()
 		rstep = self.rstepBox.value()
 		wavelength = float(self.wavelengthBox.text())
+		terminationfunctions = self.terminationfunctionlist()
 
 		if self.QButton.isChecked():
 			dataformat = 'QA'
@@ -750,8 +770,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 		self.running = True
 
 		self.thread = Worker(file = inputfile, bkgfile = bkgfile, bkgscale = bkgscale, composition = composition, dataformat= dataformat,
-		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength, x = xrebin,
-		y = yrebin)
+		qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, rpoly = rpoly, rmin = rmin, rmax = rmax, rstep = rstep, wavelength = wavelength, 
+		x = xrebin,	y = yrebin, terminationfunctions=terminationfunctions)
 		
 		self.thread.start()
 		self.thread.outputs.connect(self.plotUpdate)
@@ -1239,6 +1259,17 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 			return tmpbkgfile
 		else:
 			return bkgfile
+	def terminationfunctionlist(self):
+		tdct = {self.lorchBox: 'lorch', self.stepBox:'step'}
+		return [tdct[key] for key in tdct if key.isChecked()]
+	def updateTermination(self):
+		if self.running:
+			if not pdffunctions.versionCheck():
+				print(f'termination functions not avaiable in PDFgetX3 {pgxversion} (need 2.4.0+)')
+			tfunctions = self.terminationfunctionlist()
+			self.thread.terminationfunctions = tfunctions
+
+			self.thread.repeat = True
 	def stopRebin(self):
 		if self.running and self.noRebin.isChecked():
 			self.thread.x = None

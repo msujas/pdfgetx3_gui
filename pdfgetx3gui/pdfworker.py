@@ -8,7 +8,7 @@ from glob import glob
 class Worker(QtCore.QThread):
 	outputs = QtCore.pyqtSignal(list)
 	def __init__(self,file: str,bkgfile: str,bkgscale: float,composition: str, dataformat: str,qmin: float,qmax: float,qmaxinst: float, 
-	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float, x, y):
+	rmin: float, rmax: float, rstep: float, rpoly: float,wavelength: float, x, y, terminationfunctions):
 		super(Worker,self).__init__()
 		self.file = file
 		self.bkgfile = bkgfile
@@ -26,6 +26,7 @@ class Worker(QtCore.QThread):
 		self.running = True
 		self.x = x
 		self.y = y
+		self.terminationfunctions = terminationfunctions
 
 	def run(self):
 		while self.running:
@@ -33,7 +34,8 @@ class Worker(QtCore.QThread):
 				qi,iq,bkg,q,sq,fq,r, gr = pdffunctions.run_pdfgetx3(file=self.file, bkgfile=self.bkgfile, bkgscale=self.bkgscale,
 			composition = self.composition, qmin=self.qmin, qmax=self.qmax, qmaxinst=self.qmaxinst,
 			rpoly=self.rpoly,dataformat = self.dataformat, rmin = self.rmin, rmax = self.rmax, 
-			rstep = self.rstep,wavelength = self.wavelength, x = self.x, y = self.y)
+			rstep = self.rstep,wavelength = self.wavelength, x = self.x, y = self.y,
+			terminationfunctions=self.terminationfunctions)
 			except diffpy.pdfgetx.pdfconfig.PDFConfigError as e:
 				if 'Unknown chemical' in str(e):
 					self.outputs.emit(['invalid composition'])

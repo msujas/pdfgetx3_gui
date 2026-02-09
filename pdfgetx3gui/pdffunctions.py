@@ -1,15 +1,27 @@
 import os
 import numpy as np
-from diffpy.pdfgetx import PDFConfig
-from diffpy.pdfgetx import PDFGetter
+from diffpy.pdfgetx import PDFConfig, PDFGetter
+from diffpy.pdfgetx import __version__ as pgxversion
 
+def versionCheck(version = pgxversion):
+	vlist = version.split('.')
+	vlist = [int(i) for i in vlist]
+	checkVersion = [2,4]
+	for i,ic in zip(vlist,checkVersion):
+		if i < ic:
+			return False
+	return True
 
 
 def run_pdfgetx3(file: str,bkgfile: str,bkgscale: float,composition: str, qmin: float,qmax: float,qmaxinst: float,rpoly: float,
-dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, x= None, y= None):
-	
-	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, composition = composition, 
-	backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
+				dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, x= None, y= None, 
+				terminationfunctions = None):
+	if not terminationfunctions:
+		terminationfunctions = []
+	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, 
+					composition = composition, backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
+	if versionCheck(pgxversion):
+		config.terminationfunctions = terminationfunctions
 	if dataformat == 'twotheta':
 		config.wavelength = wavelength
 	pdfcalc = PDFGetter(config = config)
@@ -31,7 +43,8 @@ dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, x= None
 	return qi,iqorig,bkg,q, sq, fq, r, gr
 	
 def writeOutput(file: str,bkgfile: str,bkgscale: float,composition: str,qmin: float,qmax: float,qmaxinst: float,rpoly: float,
-dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck = True, sqcheck = True, fqcheck = True, grcheck = True, makedirs = True):
+dataformat: str,rmin: float, rmax: float, rstep: float,wavelength = 0.2, iqcheck = True, sqcheck = True, fqcheck = True, 
+grcheck = True, makedirs = True):
 	config = PDFConfig(bgscale = bkgscale, qmin = qmin, qmax = qmax, qmaxinst = qmaxinst, dataformat = dataformat, rpoly = rpoly, composition = composition, 
 	backgroundfile = bkgfile, rmin = rmin, rmax = rmax, rstep = rstep)
 	if dataformat == 'twotheta':
