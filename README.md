@@ -1,5 +1,7 @@
 # pdfgetx3_gui
-A gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3. Requires PDFgetX3 https://www.diffpy.org/products/pdfgetx.html, other dependencies (SciPy, numpy, matplotlib, PyQt5) will be installed through the installation (if not already installed). Recommended Python 3.10, and pip as your package manager, as this is the most recent version supported by PDFgetX3.
+Update: Jan. 2026 - PDFgetX3 2.4.0 has been released, which is compatible with Python 3.11 - 3.13. The GUI works the same for the new version, but now you don't have to create a new environment for an older version of Python. The new version has some options which are not yet available in the GUI.
+
+A gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3. Requires PDFgetX3 https://www.diffpy.org/products/pdfgetx.html, other dependencies (SciPy, numpy, matplotlib, PyQt5) will be installed through the installation (if not already installed). Recommended Python 3.10 (or later if you're using PDFgetX3 2.4+), and pip as your package manager, as this is the most recent version supported by PDFgetX3.
 
 To install, either clone this repository and run ```pip install -e .``` (-e optional to make it editable), or from PyPi with ```pip install pdfgetx3gui```. This creates a python package with an exe file called pdfgetx3gui in the python 'Scripts' folder, then it can be run with ```pdfgetx3gui``` in the terminal (if Scripts is in your PATH). 
 
@@ -14,9 +16,9 @@ There's a rebinning option to reduce high Q noise. It's not so efficient, so cou
 
 ![image](https://github.com/user-attachments/assets/4a24f026-434b-45b5-a108-6493cbdf323c)
 
-Troubleshooting:
+## Troubleshooting:
 
-If there's issues with package conflicts, or Qt bugs, probably easiest to try a new Python 3.10 environment. Recommend using pip as your package manager (not conda's built in one). In conda e.g.
+If there's issues with package conflicts, or Qt bugs, probably easiest to try a new Python 3.10 environment (or 3.13 if using the new PDFgetX3). Recommend using pip as your package manager (not conda's built in one). In conda e.g.
 ```
 conda create -n pgx python==3.10
 ```
