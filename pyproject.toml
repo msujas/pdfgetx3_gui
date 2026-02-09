@@ -9,7 +9,7 @@ requires-python = ">= 3.7"
 dependencies = ["scipy",
                 "numpy",
                 "matplotlib",
-                "PyQt5"]
+                "PyQt6"]
 authors = [{name = "Kenneth P. Marshall", email = "kenneth.marshall@esrf.fr"}]
 maintainers = [{name = "Kenneth P. Marshall", email = "kenneth.marshall@esrf.fr"}]
 description = "scripts for running a GUI wrapper for PDFgetX3"

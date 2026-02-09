@@ -6,7 +6,7 @@
 #
 # GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 import os
 from pdfgetx3gui import pdffunctions
 from diffpy.pdfgetx import __version__ as pgxversion
@@ -555,7 +555,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 		self.statusbar = QtWidgets.QStatusBar(self)
 		self.statusbar.setObjectName("statusbar")
 		self.setStatusBar(self.statusbar)
-		self.actionOpen = QtWidgets.QAction(self)
+		self.actionOpen = QtGui.QAction(self)
 		self.actionOpen.setObjectName("actionOpen")
 		self.menuFile.addAction(self.actionOpen)
 		self.menubar.addAction(self.menuFile.menuAction())
@@ -1389,7 +1389,7 @@ def main():
 	ui = Ui_MainWindow()
 	ui.setupUi()
 	ui.show()
-	sys.exit(app.exec_())
+	sys.exit(app.exec())
 
 if __name__ == "__main__":
 	main()

@@ -3,10 +3,13 @@ import numpy as np
 from diffpy.pdfgetx import PDFConfig, PDFGetter
 from diffpy.pdfgetx import __version__ as pgxversion
 
-def versionCheck(version = pgxversion):
+def versiontolist(version):
 	vlist = version.split('.')
-	vlist = [int(i) for i in vlist]
-	checkVersion = [2,4]
+	return [int(i) for i in vlist]
+
+def versionCheck(version = pgxversion, checkVersion= '2.4.0'):
+	vlist = versiontolist(version)
+	checkVersion= versiontolist(checkVersion)
 	for i,ic in zip(vlist,checkVersion):
 		if i < ic:
 			return False
