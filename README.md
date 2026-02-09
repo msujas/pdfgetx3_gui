@@ -1,5 +1,5 @@
 # pdfgetx3_gui
-Update: Jan. 2026 - PDFgetX3 2.4.0 has been released, which is compatible with Python 3.11 - 3.13. The GUI works the same for the new version, but now you don't have to create a new environment for an older version of Python. The new version has some options which are not yet available in the GUI.
+Update: Jan. 2026 - PDFgetX3 2.4.0 has been released, which is compatible with Python 3.11 - 3.13. The GUI works the same for the new version, but now you don't have to create a new environment for an older version of Python. The new version has some options which are not yet available in the GUI. Lorch function has been implemented, multiple backgrounds not yet.
 
 A gui for running PDFgetX3. I think it's a little easier to use than the interactive mode in PDFgetX3. Requires PDFgetX3 https://www.diffpy.org/products/pdfgetx.html, other dependencies (SciPy, numpy, matplotlib, PyQt5) will be installed through the installation (if not already installed). Recommended Python 3.10 (or later if you're using PDFgetX3 2.4+), and pip as your package manager, as this is the most recent version supported by PDFgetX3.
 
