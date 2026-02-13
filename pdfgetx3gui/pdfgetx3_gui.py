@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'guilayout.ui'
-#
-# Created by: PyQt5 UI code generator 5.9.2
-#
 # GUI by Kenneth Marshall, PDFGetX3 was made by Simon Billinge and Pavol Juhás
 
 from PyQt6 import QtCore, QtWidgets, QtGui
