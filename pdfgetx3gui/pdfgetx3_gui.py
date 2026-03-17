@@ -2,7 +2,7 @@
 
 from PyQt6 import QtCore, QtWidgets, QtGui
 import os
-from pdfgetx3gui import pdffunctions
+from . import pdffunctions
 from diffpy.pdfgetx import __version__ as pgxversion
 import matplotlib.pyplot as plt
 import matplotlib
@@ -14,6 +14,12 @@ import sys
 import re
 from glob import glob
 from .pdfworker import Worker, SaveDirWorker
+import platform
+
+if platform.system() == 'Windows':
+	import ctypes
+	myappid = '_pdfgetx3gui' 
+	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 def text_to_bool(text: str) -> bool:
 	if 'True' in text:
@@ -51,7 +57,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 		self.centralwidget.setObjectName("centralwidget")
 
 		self.setWindowIcon(QtGui.QIcon(f'{self.configfilepath}/icon/icon.ico'))
-		
+
 		self.grid = QtWidgets.QGridLayout()
 
 		self.filename = QtWidgets.QLineEdit()
@@ -644,8 +650,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 			
 		if os.path.exists(self.fileListFile):
 			self.readFileconfig()
-		self.filelistBox.currentTextChanged.connect(self.changeFile)
-		self.bkgfilelistBox.currentTextChanged.connect(self.bkgchangeFile)
+		self.filelistBox.currentIndexChanged.connect(self.changeFile)
+		self.bkgfilelistBox.currentIndexChanged.connect(self.bkgchangeFile)
 		
 
 
